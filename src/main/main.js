@@ -62,7 +62,7 @@ function initialBounds() {
     return { x: saved.x, y: saved.y, width: saved.w, height: saved.h };
   }
   const s = store.get('settings');
-  const [width, height] = s.defaultSize;
+  const [width, height] = Array.isArray(s.defaultSize) ? s.defaultSize : [480, 270];
   const wa = screen.getPrimaryDisplay().workArea;
   return cornerBounds(wa, s.defaultCorner, width, height);
 }
@@ -198,8 +198,27 @@ function toggleMini() {
   } else {
     state.mini = false;
     if (state.preMiniBounds) win.setBounds(state.preMiniBounds);
+    ensureOnScreen(); // its monitor may have been unplugged meanwhile
+    win.setAspectRatio(state.aspect || 0);
   }
   sendState();
+}
+
+function setAspect(r) {
+  state.aspect = Number.isFinite(r) && r > 0 ? Math.min(4, Math.max(0.25, r)) : 0;
+  if (state.mini) return; // applied when leaving mini
+  win.setAspectRatio(state.aspect);
+  if (!state.aspect) return;
+  // Fit the window to the new ratio, keeping its width, then keep it inside the screen.
+  const b = win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  let width = b.width, height = Math.round(b.width / state.aspect);
+  if (height > wa.height * 0.8) { height = Math.round(wa.height * 0.6); width = Math.round(height * state.aspect); }
+  width = Math.min(width, wa.width);
+  height = Math.max(112, height);
+  const x = Math.min(Math.max(b.x, wa.x), wa.x + wa.width - width);
+  const y = Math.min(Math.max(b.y, wa.y), wa.y + wa.height - height);
+  win.setBounds({ x, y, width, height });
 }
 
 function setPinned(on) {
@@ -252,13 +271,9 @@ function startCursorWatch() {
 function hardenSessions() {
   // Embedded players must never open new windows or reach Node.
   app.on('web-contents-created', (_e, contents) => {
-    contents.setWindowOpenHandler(({ url }) => {
-      if (contents.getType() === 'webview' && /^https?:/.test(url)) {
-        // Links clicked inside a web page open in the real browser instead.
-        shell.openExternal(url);
-      }
-      return { action: 'deny' };
-    });
+    // Pop-ups are always denied. Never forward them to the real browser either:
+    // ad scripts open windows without any click.
+    contents.setWindowOpenHandler(() => ({ action: 'deny' }));
     contents.on('will-attach-webview', (_ev, prefs, params) => {
       delete prefs.preload;
       prefs.nodeIntegration = false;
@@ -371,6 +386,7 @@ ipcMain.handle('update-history', (_e, url, patch) => {
   if (typeof patch?.title === 'string') allowed.title = patch.title.slice(0, 200);
   if (Number.isFinite(patch?.lastPosition)) allowed.lastPosition = Math.max(0, patch.lastPosition);
   store.updateHistory(url, allowed);
+  if (app.isQuitting) store.flush(); // the debounced save would never run
 });
 
 ipcMain.handle('clear-history', () => { store.set('history', []); return []; });
@@ -379,9 +395,19 @@ ipcMain.handle('clear-site-data', async () => {
   await Promise.all(['persist:embed', 'persist:fallback'].map((p) => session.fromPartition(p).clearStorageData()));
 });
 
+// What the UI may change, and what a valid value looks like.
+const SETTING_RULES = {
+  opacity: (v) => typeof v === 'number' && v >= 0.2 && v <= 1,
+  clickThroughOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
+  aspect: (v) => ['auto', '16:9', '9:16', '4:3', 'free'].includes(v),
+  defaultCorner: (v) => ['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(v),
+  launchAtLogin: (v) => typeof v === 'boolean',
+  ytDlpPath: (v) => v === null || (typeof v === 'string' && /\.exe$/i.test(v) && path.isAbsolute(v)),
+};
+
 ipcMain.handle('set-setting', (_e, key, value) => {
   const settings = { ...store.get('settings') };
-  if (!(key in settings) || key === 'hotkeys') return settings;
+  if (!SETTING_RULES[key]?.(value)) return settings;
   settings[key] = value;
   store.set('settings', settings);
   if (key === 'launchAtLogin') app.setLoginItemSettings({ openAtLogin: !!value });
@@ -410,19 +436,7 @@ ipcMain.on('window', (_e, action, arg) => {
     case 'pin': setPinned(!state.pinned); break;
     case 'click-through': setClickThrough(!state.clickThrough); break;
     case 'opacity': setOpacity(Number(arg)); break;
-    case 'aspect': {
-      const r = Number(arg);
-      win.setAspectRatio(state.mini || !Number.isFinite(r) ? 0 : r);
-      // Fit the current window to the new ratio, keeping its width.
-      if (r > 0 && !state.mini) {
-        const b = win.getBounds();
-        const h = Math.round(b.width / r);
-        const wa = screen.getDisplayMatching(b).workArea;
-        if (h <= wa.height) win.setBounds({ ...b, height: Math.max(112, h) });
-        else win.setBounds({ ...b, width: Math.round(wa.height * 0.6 * r), height: Math.round(wa.height * 0.6) });
-      }
-      break;
-    }
+    case 'aspect': setAspect(Number(arg)); break;
     case 'playing':
       if (arg && psbId === null) psbId = powerSaveBlocker.start('prevent-display-sleep');
       if (!arg && psbId !== null) { powerSaveBlocker.stop(psbId); psbId = null; }

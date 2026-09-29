@@ -41,6 +41,9 @@ test('Vimeo and Twitch', async () => {
   assert.match((await resolve('https://vimeo.com/76979871/abcdef1234')).url, /h=abcdef1234/);
   assert.match((await resolve('https://www.twitch.tv/somechannel')).url, /player\.twitch\.tv\/\?.*channel=somechannel/);
   assert.match((await resolve('https://www.twitch.tv/videos/123456')).url, /video=123456/);
+  const p = await resolve('https://player.twitch.tv/?channel=abc&parent=example.com');
+  assert.equal(p.kind, 'embed');
+  assert.match(p.url, /channel=abc/);
 });
 
 test('unknown sites use the web fallback', async () => {

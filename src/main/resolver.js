@@ -69,8 +69,12 @@ const vimeo = {
 
 const twitch = {
   name: 'twitch',
-  match: (u) => /(^|\.)twitch\.tv$/.test(u.hostname) && !u.hostname.startsWith('player.'),
+  match: (u) => /(^|\.)twitch\.tv$/.test(u.hostname),
   resolve(u) {
+    // Already an embed URL (e.g. found inside a web page): use it as-is.
+    if (u.hostname === 'player.twitch.tv' || u.hostname === 'clips.twitch.tv') {
+      return { kind: 'embed', provider: 'twitch', url: u.toString() };
+    }
     const parts = u.pathname.split('/').filter(Boolean);
     if (!parts.length) return null;
     const q = new URLSearchParams({ parent: 'twitch.tv', autoplay: 'true', muted: 'false' });

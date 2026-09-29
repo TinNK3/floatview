@@ -36,9 +36,12 @@ let seeking = false;
 
 // ------------------------------------------------------------------ open / close
 
+let openSeq = 0; // only the most recently requested link may take over the player
+
 async function openLink(input, opts = {}) {
   const text = String(input || '').trim();
   if (!text) return;
+  const seq = ++openSeq;
   hideError();
   body.classList.remove('show-link');
   ui.loading.hidden = false;
@@ -46,9 +49,11 @@ async function openLink(input, opts = {}) {
   try {
     source = await api.openLink(text, opts);
   } catch (err) {
+    if (seq !== openSeq) return;
     ui.loading.hidden = true;
     return showError(cleanError(err), text);
   }
+  if (seq !== openSeq) return; // a newer link was pasted while this one resolved
   teardown();
   body.classList.remove('is-empty');
   ui.emptyClose.hidden = false;
@@ -98,16 +103,22 @@ function setTitle(t) { ui.title.textContent = t; ui.title.title = t; }
 // ------------------------------------------------------------------ polling
 
 async function poll() {
-  if (!player || !session) return;
-  const s = await player.status();
-  if (!session) return;
+  if (!player || !session || session.polling) return;
+  const sess = session, p = player;
+  sess.polling = true;
+  const s = await p.status().finally(() => { sess.polling = false; });
+  if (session !== sess || player !== p) return; // result belongs to a player that is gone
 
   if (!s || !s.found) {
     const waited = Date.now() - session.startedAt;
+    if (session.wasPlaying) { session.wasPlaying = false; api.window('playing', false); }
     // The page has no <video> but embeds a known player -> open that instead.
-    if (s?.embeds?.length && session.source.kind === 'web' && waited > 3000) {
+    // (Values come from the page, so only accept plain web links.)
+    const embed = Array.isArray(s?.embeds) && s.embeds.find((u) => typeof u === 'string' && /^https:\/\//.test(u));
+    if (embed && !session.redirecting && session.source.kind === 'web' && waited > 3000) {
+      session.redirecting = true;
       toast('Found an embedded player on this page — opening it');
-      return openLink(s.embeds[0]);
+      return openLink(embed);
     }
     if (session.source.kind === 'web' && waited > WEB_NO_VIDEO_MS && ui.error.hidden) {
       showError("Couldn't find a video on this page. Try opening it in your browser, or set up yt-dlp in Settings.", session.source.original);
@@ -124,14 +135,17 @@ async function poll() {
     player.cmd('play');
   }
 
-  // "Playing" but the clock doesn't move -> the stream is stuck.
+  // "Playing" but the clock doesn't move -> the stream is stuck. Live streams get longer to buffer.
   if (!s.paused && s.currentTime === session.stallAt) {
-    if (Date.now() - session.stallSince > STALL_MS && ui.error.hidden) {
+    const limit = s.duration === null ? STALL_MS * 2 : STALL_MS;
+    if (Date.now() - session.stallSince > limit && ui.error.hidden) {
+      session.stallShown = true;
       showError('This video is stuck and not loading. It may play in your browser.', session.source.original);
     }
   } else {
     session.stallAt = s.currentTime;
     session.stallSince = Date.now();
+    if (session.stallShown) { session.stallShown = false; hideError(); } // it recovered
   }
 
   // Resume where you stopped (YouTube gets this through its "start" parameter instead).
@@ -141,8 +155,8 @@ async function poll() {
   }
 
   // Shape the window like the video.
-  if (app.settings.aspect === 'auto' && s.w && s.h) {
-    const ratio = Math.round((s.w / s.h) * 1000) / 1000;
+  if (app.settings.aspect === 'auto' && s.w > 0 && s.h > 0) {
+    const ratio = Math.min(4, Math.max(0.25, Math.round((s.w / s.h) * 1000) / 1000));
     if (ratio !== session.aspect) { session.aspect = ratio; api.window('aspect', ratio); }
   }
 
@@ -369,6 +383,7 @@ function closeSettings() { ui.settings.hidden = true; }
 
 function showError(msg, url) {
   ui.loading.hidden = true;
+  if (session?.wasPlaying) { session.wasPlaying = false; api.window('playing', false); } // let the screen sleep again
   ui.errorText.textContent = msg;
   ui.error.dataset.url = /^https?:/.test(url || '') ? url : '';
   $('error-browser').hidden = !ui.error.dataset.url;

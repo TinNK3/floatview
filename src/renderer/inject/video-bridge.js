@@ -2,7 +2,7 @@
 // Exposes window.__fv so the host can drive the page's main <video>.
 // Set window.__fvVideoOnly = true before injecting to hide everything else.
 (() => {
-  if (window.__fv) return true;
+  // Always (re)install: a page must not be able to pre-define its own __fv.
 
   const STYLE_ID = '__fv-style';
   const CSS = `
@@ -98,6 +98,6 @@
     };
   }
 
-  window.__fv = { cmd, status, videoOnly };
+  Object.defineProperty(window, '__fv', { value: Object.freeze({ cmd, status, videoOnly }), configurable: true, writable: false });
   return true;
 })();
