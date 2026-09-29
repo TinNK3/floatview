@@ -1,7 +1,22 @@
+<p align="center">
+  <img src="docs/banner.png" alt="FloatView — paste a link, the video floats on top of every window" width="100%">
+</p>
+
+<p align="center">
+  <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0b0c0f?logo=windows&logoColor=6aa7ff">
+  <img alt="Electron 44" src="https://img.shields.io/badge/Electron-44-0b0c0f?logo=electron&logoColor=6aa7ff">
+  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-6aa7ff">
+  <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-0b0c0f">
+</p>
+
 # FloatView
 
 Paste a video link → it plays in a small floating window that **stays on top of every other window**.
 Local only: no accounts, no telemetry, nothing leaves the PC except the video stream itself.
+
+| Playing on top | Paste a link | Click-through mode |
+|---|---|---|
+| ![Player with controls](docs/screenshot-player.png) | ![Link box with recent links](docs/screenshot-link.png) | ![Click-through mode](docs/screenshot-click-through.png) |
 
 ## Install
 Run `dist\FloatView Setup 0.1.0.exe` (per-user, no admin needed). It installs to
@@ -48,6 +63,7 @@ npm run smoke      # end-to-end: launches the app, plays MP4/HLS/YouTube/Vimeo/w
 npm run dist       # build the installer into dist\
 ```
 `SMOKE_EXE=dist\win-unpacked\FloatView.exe npm run smoke` runs the same test against the packaged build.
+The banner is `docs/banner/banner.html`; re-render it with `powershell docs\banner\render.ps1`.
 
 ## Layout
 ```
