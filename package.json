@@ -1,0 +1,49 @@
+{
+  "name": "floatview",
+  "productName": "FloatView",
+  "version": "0.1.0",
+  "description": "Paste a link, watch the video in a floating always-on-top window.",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/unit/*.test.js",
+    "smoke": "node test/smoke.js",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "local.floatview",
+    "productName": "FloatView",
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "!**/*.map",
+      "!**/*.d.ts",
+      "!node_modules/dashjs/dist/legacy/**",
+      "!node_modules/dashjs/dist/modern/esm/**",
+      "!node_modules/dashjs/dist/modern/umd/!(dash.all.min.js)",
+      "!node_modules/dashjs/{src,index.d.ts,contrib,samples,test,build}/**",
+      "!node_modules/hls.js/dist/!(hls.min.js)",
+      "!node_modules/hls.js/src/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "perMachine": false,
+      "oneClick": true
+    },
+    "publish": null
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "playwright-core": "^1.63.0"
+  },
+  "dependencies": {
+    "dashjs": "^5.2.1",
+    "hls.js": "^1.7.3"
+  }
+}
