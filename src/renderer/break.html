@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' file:">
+  <title>Time to move — FloatView</title>
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="clock/flip-clock.css">
+  <link rel="stylesheet" href="break.css">
+</head>
+<body>
+  <main id="card" data-state="due">
+    <header>
+      <span class="badge" id="badge">Stand-up reminder</span>
+      <span class="sitting" id="sitting"></span>
+    </header>
+
+    <section class="due">
+      <h1>Time to stand up <span aria-hidden="true">🧍</span></h1>
+      <p class="tip" id="tip-due"></p>
+      <div class="actions">
+        <button id="start" class="primary" autofocus>Start break</button>
+        <button id="snooze">Snooze</button>
+        <button id="skip" class="quiet">Skip</button>
+      </div>
+      <p class="note" id="note"></p>
+    </section>
+
+    <section class="break">
+      <div id="countdown"></div>
+      <p class="tip" id="tip-break"></p>
+      <div class="actions">
+        <button id="minus" title="−1 min for this break">−1 min</button>
+        <button id="plus" title="+1 min for this break">+1 min</button>
+        <button id="end" class="quiet">End break</button>
+      </div>
+    </section>
+  </main>
+  <script src="../shared/duration.js"></script>
+  <script src="clock/flip-clock.js"></script>
+  <script src="break.js"></script>
+</body>
+</html>

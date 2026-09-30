@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Store } = require('./store');
 const { resolve } = require('./resolver');
+const { setupClock } = require('./clock-main');
 
 // Autoplay with sound without a click inside the page (we are a video player).
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -34,6 +35,15 @@ let state = {
   handleHot: false,
 };
 let psbId = null;
+let clock = null;
+const CLOCK_SIZE = { width: 420, height: 250 };
+
+// Clock mode has no fixed shape; video modes follow the video.
+const effAspect = () => (state.mini || viewMode() === 'clock' ? 0 : state.aspect || 0);
+const viewMode = () => store.get('settings').viewMode;
+
+// A separate data folder (tests, a second profile) is a separate app instance with its own lock.
+if (process.env.FLOATVIEW_DATA_DIR) app.setPath('userData', process.env.FLOATVIEW_DATA_DIR);
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -47,6 +57,17 @@ function boot() {
   state.opacity = store.get('settings').opacity;
   hardenSessions();
   createWindow();
+  clock = setupClock({
+    store, root: ROOT, getWin: () => win, send, showMain: () => { showWindow(); win.focus(); },
+    preload: path.join(__dirname, '..', 'preload.js'), icon: ICON, isTest: !!process.env.FLOATVIEW_TEST,
+    isMediaPlaying: () => psbId !== null,
+    isHidden: () => state.hidden,
+    onTick: (snap) => {
+      tray?.setToolTip(['FloatView', clock?.trayLabel(snap)].filter(Boolean).join(' · ').slice(0, 127));
+      const key = `${snap.pomo.phase}|${snap.pomo.running}|${snap.move.state}|${snap.move.canSnooze}|${snap.move.enabled}`;
+      if (key !== state.timerKey) { state.timerKey = key; refreshTray(); }
+    },
+  });
   createTray();
   registerHotkeys();
   startCursorWatch();
@@ -57,7 +78,7 @@ function boot() {
 // ---------------------------------------------------------------- window
 
 function initialBounds() {
-  const saved = store.get('window');
+  const saved = viewMode() === 'clock' ? store.get('windowByMode').clock : store.get('window');
   if (saved && isVisibleOnSomeDisplay(saved)) {
     return { x: saved.x, y: saved.y, width: saved.w, height: saved.h };
   }
@@ -146,7 +167,9 @@ function saveBounds() {
   if (!win || state.mini) return;
   const b = win.getBounds();
   const d = screen.getDisplayMatching(b);
-  store.set('window', { x: b.x, y: b.y, w: b.width, h: b.height, displayId: d.id });
+  const saved = { x: b.x, y: b.y, w: b.width, h: b.height, displayId: d.id };
+  if (viewMode() === 'clock') store.set('windowByMode', { ...store.get('windowByMode'), clock: saved });
+  else store.set('window', saved);
 }
 
 function snapToEdges() {
@@ -201,14 +224,14 @@ function toggleMini() {
     state.mini = false;
     if (state.preMiniBounds) win.setBounds(state.preMiniBounds);
     ensureOnScreen(); // its monitor may have been unplugged meanwhile
-    win.setAspectRatio(state.aspect || 0);
+    win.setAspectRatio(effAspect());
   }
   sendState();
 }
 
 function setAspect(r) {
   state.aspect = Number.isFinite(r) && r > 0 ? Math.min(4, Math.max(0.25, r)) : 0;
-  if (state.mini) return; // applied when leaving mini
+  if (state.mini || viewMode() === 'clock') return; // applied when leaving mini / clock mode
   win.setAspectRatio(state.aspect);
   if (!state.aspect) return;
   // Fit the window to the new ratio, keeping its width, then keep it inside the screen.
@@ -223,6 +246,44 @@ function setAspect(r) {
   win.setBounds({ x, y, width, height });
 }
 
+// ---- view modes: video | video-clock | clock ------------------------------------
+// Clock mode keeps its own window size/position; the two video modes share one.
+const VIEW_MODES = ['video', 'video-clock', 'clock'];
+
+function setViewMode(mode) {
+  if (!win || !VIEW_MODES.includes(mode)) return;
+  const prev = viewMode();
+  if (prev === mode) return;
+  if (state.mini) { state.mini = false; if (state.preMiniBounds) win.setBounds(state.preMiniBounds); }
+  saveBounds(); // under the old mode
+  store.set('settings', { ...store.get('settings'), viewMode: mode });
+  if ((prev === 'clock') !== (mode === 'clock')) {
+    const saved = mode === 'clock' ? store.get('windowByMode').clock : store.get('window');
+    const cur = win.getBounds();
+    const wa = screen.getDisplayMatching(cur).workArea;
+    let b;
+    if (saved && isVisibleOnSomeDisplay(saved)) b = { x: saved.x, y: saved.y, width: saved.w, height: saved.h };
+    else {
+      // First time: same corner as the current window.
+      const size = mode === 'clock' ? CLOCK_SIZE : { width: 480, height: 270 };
+      const right = cur.x + cur.width / 2 > wa.x + wa.width / 2, bottom = cur.y + cur.height / 2 > wa.y + wa.height / 2;
+      b = cornerBounds(wa, `${bottom ? 'bottom' : 'top'}-${right ? 'right' : 'left'}`, size.width, size.height);
+    }
+    win.setAspectRatio(0);
+    win.setBounds(b);
+    win.setAspectRatio(effAspect());
+  }
+  win.setAspectRatio(effAspect()); // e.g. coming from mini size
+  // Clock mode can pause the video (setting); coming back resumes it.
+  clock?.holdVideo('clock', mode === 'clock' && store.get('settings').clock.pauseVideoInClock);
+  send('settings', store.get('settings'));
+  sendState();
+}
+
+function cycleViewMode() {
+  setViewMode(VIEW_MODES[(VIEW_MODES.indexOf(viewMode()) + 1) % VIEW_MODES.length]);
+}
+
 // ---- size presets ------------------------------------------------------------
 // Presets are a share of the screen's width, so they feel the same on any monitor.
 const SIZE_PRESETS = { small: 0.2, medium: 0.33, large: 0.5, huge: 0.75 };
@@ -232,10 +293,10 @@ const MIN_W = 200, MIN_H = 112;
 // edge stays put, so a window in the bottom-right corner grows up and to the left.
 function resizeTo(width) {
   if (!win) return;
-  if (state.mini) { state.mini = false; win.setAspectRatio(state.aspect || 0); }
+  if (state.mini) { state.mini = false; win.setAspectRatio(effAspect()); }
   const b = win.getBounds();
   const wa = screen.getDisplayMatching(b).workArea;
-  const ratio = state.aspect || b.width / b.height;
+  const ratio = effAspect() || b.width / b.height;
   let w = Math.round(Math.min(Math.max(width, MIN_W), wa.width));
   let h = Math.round(w / ratio);
   if (h > wa.height) { h = wa.height; w = Math.round(h * ratio); }
@@ -256,7 +317,7 @@ let gripStart = null;
 function gripResize(phase, dx = 0, dy = 0) {
   if (!win) return;
   if (phase === 'start') {
-    if (state.mini) { state.mini = false; win.setAspectRatio(state.aspect || 0); }
+    if (state.mini) { state.mini = false; win.setAspectRatio(effAspect()); }
     gripStart = win.getBounds();
     return;
   }
@@ -266,8 +327,8 @@ function gripResize(phase, dx = 0, dy = 0) {
   const wa = screen.getDisplayMatching(s).workArea;
   const maxW = wa.x + wa.width - s.x, maxH = wa.y + wa.height - s.y;
   let w, h;
-  if (state.aspect) {
-    const r = state.aspect;
+  if (effAspect()) {
+    const r = effAspect();
     // Follow whichever direction the pointer moved more.
     w = Math.abs(dx) >= Math.abs(dy * r) ? s.width + dx : (s.height + dy) * r;
     w = Math.min(Math.max(w, MIN_W, MIN_H * r), maxW, maxH * r);
@@ -378,6 +439,20 @@ function createTray() {
   refreshTray();
 }
 
+function timerMenu() {
+  if (!clock) return [{ label: 'Loading…', enabled: false }];
+  const snap = clock.timers.snapshot();
+  const p = snap.pomo, m = snap.move;
+  return [
+    { label: p.running ? 'Pause Pomodoro' : p.phase === 'idle' ? 'Start Pomodoro' : 'Resume Pomodoro', click: () => { clock.act('pomo-toggle'); refreshTray(); } },
+    { label: 'Skip phase', enabled: p.phase !== 'idle', click: () => { clock.act('pomo-skip'); refreshTray(); } },
+    { label: 'Reset Pomodoro', enabled: p.phase !== 'idle', click: () => { clock.act('pomo-reset'); refreshTray(); } },
+    { type: 'separator' },
+    { label: 'Take a move break now', enabled: m.enabled && m.state !== 'break', click: () => { clock.act('move-break'); refreshTray(); } },
+    { label: 'Snooze reminder', enabled: m.state === 'due' && m.canSnooze, click: () => { clock.act('move-snooze'); refreshTray(); } },
+  ];
+}
+
 function refreshTray() {
   if (!tray) return;
   tray.setContextMenu(Menu.buildFromTemplate([
@@ -397,6 +472,13 @@ function refreshTray() {
       { label: 'Smaller\tCtrl+Alt+-', click: () => resizeBy(1 / 1.15) },
     ] },
     { type: 'separator' },
+    { label: 'View', submenu: [
+      { label: 'Video', type: 'radio', checked: viewMode() === 'video', click: () => setViewMode('video') },
+      { label: 'Video + Clock', type: 'radio', checked: viewMode() === 'video-clock', click: () => setViewMode('video-clock') },
+      { label: 'Clock only', type: 'radio', checked: viewMode() === 'clock', click: () => setViewMode('clock') },
+    ] },
+    { label: 'Timer', submenu: timerMenu() },
+    { type: 'separator' },
     { label: 'Settings…', click: () => { showWindow(); win.focus(); send('command', 'settings'); } },
     { label: 'Quit FloatView', click: quit },
   ]));
@@ -414,6 +496,10 @@ const HOTKEY_ACTIONS = {
   togglePin: () => setPinned(!state.pinned),
   sizeUp: () => resizeBy(1.15),
   sizeDown: () => resizeBy(1 / 1.15),
+  cycleView: () => { showWindow(); cycleViewMode(); },
+  pomoToggle: () => { clock?.act('pomo-toggle'); refreshTray(); },
+  moveBreakNow: () => { clock?.act('move-break'); refreshTray(); },
+  moveSnooze: () => { clock?.act('move-snooze'); refreshTray(); },
 };
 
 function registerHotkeys() {
@@ -436,7 +522,7 @@ function send(channel, payload) {
 function publicState() {
   return {
     pinned: state.pinned, clickThrough: state.clickThrough, hidden: state.hidden,
-    mini: state.mini, opacity: state.opacity, hotkeyErrors: state.hotkeyErrors || [],
+    mini: state.mini, opacity: state.opacity, hotkeyErrors: state.hotkeyErrors || [], viewMode: viewMode(),
     size: win && !win.isDestroyed() ? win.getSize() : null,
   };
 }
@@ -527,6 +613,8 @@ ipcMain.on('window', (_e, action, arg) => {
     case 'click-through': setClickThrough(!state.clickThrough); break;
     case 'opacity': setOpacity(Number(arg)); break;
     case 'aspect': setAspect(Number(arg)); break;
+    case 'view-mode': setViewMode(String(arg)); break;
+    case 'view-cycle': cycleViewMode(); break;
     case 'playing':
       if (arg && psbId === null) psbId = powerSaveBlocker.start('prevent-display-sleep');
       if (!arg && psbId !== null) { powerSaveBlocker.stop(psbId); psbId = null; }
@@ -554,5 +642,8 @@ app.on('window-all-closed', () => app.quit());
 
 // Test hook: lets the smoke test read main-process state.
 if (process.env.FLOATVIEW_TEST) {
-  global.__floatview = { get win() { return win; }, get state() { return state; }, get store() { return store; } };
+  global.__floatview = {
+    get win() { return win; }, get state() { return state; }, get store() { return store; }, get clock() { return clock; },
+    setViewMode,
+  };
 }

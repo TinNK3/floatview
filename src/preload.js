@@ -24,4 +24,17 @@ contextBridge.exposeInMainWorld('floatview', {
   onCursor: on('cursor'),
   onHandleHot: on('handle-hot'),
   onSize: on('size'),
+  // clock, Pomodoro, move reminder, sounds
+  timer: (action, arg) => ipcRenderer.invoke('timer', action, arg),
+  getTimer: () => ipcRenderer.invoke('get-timer'),
+  getClockAssets: () => ipcRenderer.invoke('get-clock-assets'),
+  setSection: (section, value) => ipcRenderer.invoke('set-section', section, value),
+  addSound: (testPath) => ipcRenderer.invoke('add-sound', testPath),
+  removeSound: (id) => ipcRenderer.invoke('remove-sound', id),
+  getStats: () => ipcRenderer.invoke('get-stats'),
+  resetStats: () => ipcRenderer.invoke('reset-stats'),
+  onTimerState: on('timer-state'),
+  onTimerVideo: on('timer-video'),
+  onPlaySound: on('play-sound'),
+  onSettings: on('settings'),
 });

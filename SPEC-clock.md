@@ -1,6 +1,8 @@
 # FloatView — Flip Clock, Pomodoro & Move Reminders · Specification v0.1
 
-> Add-on to [SPEC.md](SPEC.md). Status: **Draft — waiting for Alex's review before any code.**
+> Add-on to [SPEC.md](SPEC.md). Status: **Built in 0.2.0 (2026-09-29).** Open questions 2–5 used the defaults: strict mode off, small break card (no screen dim), reminders at any hour (active hours optional), no second time zone.
+>
+> **Decision made while building:** Windows' "idle" time only counts mouse/keyboard input, so watching a FloatView video without touching anything looked like being away and reset the sitting timer. While a FloatView video is playing, idle time is ignored: you are still sitting. (Locking the PC or sleep still count as a break.)
 > Date: 2026-09-29 · Target version: 0.2.0
 
 ---

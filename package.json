@@ -1,7 +1,7 @@
 {
   "name": "floatview",
   "productName": "FloatView",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Paste a link, watch the video in a floating always-on-top window.",
   "main": "src/main/main.js",
   "private": true,
@@ -9,7 +9,8 @@
     "start": "electron .",
     "test": "node --test test/unit/*.test.js",
     "smoke": "node test/smoke.js",
-    "dist": "electron-builder --win nsis portable"
+    "dist": "electron-builder --win nsis portable",
+    "smoke:clock": "node test/smoke-clock.js"
   },
   "build": {
     "appId": "local.floatview",

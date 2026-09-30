@@ -5,12 +5,37 @@
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src * blob: data: file:; connect-src *; worker-src blob:; frame-src https:">
   <title>FloatView</title>
+  <link rel="stylesheet" href="../../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="clock/flip-clock.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="clock-ui.css">
 </head>
 <body class="is-empty">
   <main id="stage">
     <video id="native" playsinline hidden></video>
   </main>
+
+  <!-- Clock on top of the video (Video + Clock mode) -->
+  <div id="clock-overlay" aria-hidden="true"><div class="clock-pill"><div id="overlay-clock"></div></div></div>
+
+  <!-- Clock only mode -->
+  <section id="clock-screen" aria-label="Clock">
+    <div class="clock-center">
+      <div id="screen-clock"></div>
+      <div id="pomo-panel">
+        <div class="pomo-status"><span id="pomo-phase" class="chip">Pomodoro</span><span id="pomo-dots" aria-label="Rounds"></span><span id="move-status"></span></div>
+        <div class="pomo-buttons">
+          <button id="pomo-minus" title="−1 min for this round">−1</button>
+          <button id="pomo-toggle" class="primary" title="Start / pause (Ctrl+Alt+S)">Start</button>
+          <button id="pomo-plus1" title="+1 min for this round">+1</button>
+          <button id="pomo-plus5" title="+5 min for this round">+5</button>
+          <button id="pomo-skip" title="Skip to the next phase">Skip</button>
+          <button id="pomo-reset" title="Reset the Pomodoro">Reset</button>
+          <button id="move-now" title="Take a move break now (Ctrl+Alt+B)">Stand up</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Empty state / new-link sheet -->
   <section id="empty" aria-label="Open a link">
@@ -29,6 +54,7 @@
       </form>
       <ul id="recent" aria-label="Recent links"></ul>
       <p class="hint">Tip: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> opens this from anywhere · drop a link or file here</p>
+      <div class="empty-actions"><button id="empty-clock" type="button">⏱ Clock &amp; Pomodoro</button><button id="empty-settings" type="button">Settings</button></div>
     </div>
   </section>
 
@@ -36,6 +62,7 @@
   <header id="topbar" class="overlay">
     <span id="title">FloatView</span>
     <div class="buttons">
+      <button class="icon" id="btn-view" title="View: Video → Video + Clock → Clock (Ctrl+Alt+C)"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></button>
       <button class="icon" id="btn-new" title="Open new link (N)"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
       <button class="icon" id="btn-clickthrough" title="Click-through (Ctrl+Alt+T)"><svg viewBox="0 0 24 24"><path d="M5 3l6 16 2.2-6.8L20 10z"/><path d="M13.2 12.2L19 18"/></svg></button>
       <button class="icon" id="btn-pin" title="Always on top (Ctrl+Alt+P)"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8"/></svg></button>
@@ -121,7 +148,20 @@
       <strong>Settings</strong>
       <button class="icon ghost" id="settings-close" title="Close (Esc)"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="settings-body">
+    <nav class="settings-tabs" role="tablist">
+      <button role="tab" data-tab="general" aria-selected="true">General</button>
+      <button role="tab" data-tab="clock" aria-selected="false">Clock</button>
+      <button role="tab" data-tab="pomodoro" aria-selected="false">Pomodoro</button>
+      <button role="tab" data-tab="move" aria-selected="false">Move</button>
+      <button role="tab" data-tab="sounds" aria-selected="false">Sounds</button>
+      <button role="tab" data-tab="stats" aria-selected="false">Stats</button>
+    </nav>
+    <div class="settings-body tab-panel" data-panel="clock" hidden></div>
+    <div class="settings-body tab-panel" data-panel="pomodoro" hidden></div>
+    <div class="settings-body tab-panel" data-panel="move" hidden></div>
+    <div class="settings-body tab-panel" data-panel="sounds" hidden></div>
+    <div class="settings-body tab-panel" data-panel="stats" hidden></div>
+    <div class="settings-body tab-panel" data-panel="general">
       <label>Default opacity <output id="o-opacity"></output>
         <input type="range" id="s-opacity" min="20" max="100"></label>
       <label>Opacity in click-through mode <output id="o-ct"></output>
@@ -159,5 +199,8 @@
   <script src="../../node_modules/dashjs/dist/modern/umd/dash.all.min.js"></script>
   <script src="players.js"></script>
   <script src="renderer.js"></script>
+  <script src="../shared/duration.js"></script>
+  <script src="clock/flip-clock.js"></script>
+  <script src="clock-ui.js"></script>
 </body>
 </html>

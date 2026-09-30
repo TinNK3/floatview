@@ -1,0 +1,109 @@
+/* ---- view modes ---- */
+#clock-overlay, #clock-screen { display: none; }
+
+/* Video + Clock: clock sits on the video, under the bars */
+body.mode-video-clock:not(.is-empty) #clock-overlay { display: flex; }
+#clock-overlay { position: fixed; inset: 40px 12px 66px; z-index: 6; pointer-events: none; padding: 0; }
+#clock-overlay[data-anchor^=top] { align-items: flex-start; }
+#clock-overlay[data-anchor=left], #clock-overlay[data-anchor=center], #clock-overlay[data-anchor=right] { align-items: center; }
+#clock-overlay[data-anchor^=bottom] { align-items: flex-end; }
+#clock-overlay[data-anchor$=left] { justify-content: flex-start; }
+#clock-overlay[data-anchor=top], #clock-overlay[data-anchor=center], #clock-overlay[data-anchor=bottom] { justify-content: center; }
+#clock-overlay[data-anchor$=right] { justify-content: flex-end; }
+#clock-overlay .clock-pill { opacity: var(--overlay-opacity, .85); transition: opacity var(--fade); border-radius: 14px; padding: 0; }
+#clock-overlay .clock-pill.glass { padding: 8px 14px; background: var(--pill-bg); backdrop-filter: blur(var(--pill-blur, 0px)); }
+body.active #clock-overlay.hide-on-hover .clock-pill { opacity: 0; }
+
+/* Clock only: whole window is the clock; the video keeps playing hidden underneath */
+body.mode-clock #clock-screen { display: grid; }
+body.mode-clock #stage { visibility: hidden; }
+body.mode-clock #controls { display: none; }
+body.mode-clock #empty { display: none; }
+body.is-empty.mode-clock #topbar { display: flex; }
+body.is-empty.mode-clock #btn-clickthrough, body.is-empty.mode-clock #btn-size { display: none; }
+#clock-screen { position: fixed; inset: 0; z-index: 7; place-items: center; overflow: hidden;
+  background: var(--screen-bg, #0b0c0f); -webkit-app-region: drag; }
+#clock-screen.scanlines::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); }
+.clock-center { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; }
+
+#pomo-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; -webkit-app-region: no-drag;
+  color: var(--screen-muted, #9097a6); font-size: 12px; }
+.pomo-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.chip { padding: 2px 10px; border-radius: 999px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 11px;
+  background: color-mix(in srgb, var(--screen-accent, #6aa7ff) 18%, transparent); color: var(--screen-accent, #6aa7ff); }
+#pomo-dots { display: inline-flex; gap: 5px; }
+#pomo-dots i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .35; }
+#pomo-dots i.on { background: var(--screen-accent, #6aa7ff); opacity: 1; }
+.pomo-buttons { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; opacity: .35; transition: opacity var(--fade); }
+body.active .pomo-buttons, .pomo-buttons:focus-within, body.timer-running-none .pomo-buttons { opacity: 1; }
+.pomo-buttons button { height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06); color: var(--screen-text, #eceef3); cursor: pointer; font-size: 12px; }
+.pomo-buttons button:hover { background: rgba(255,255,255,.14); }
+.pomo-buttons button.primary { background: var(--screen-accent, #6aa7ff); border: 0; color: #06142b; font-weight: 600; height: 28px; min-width: 72px; }
+#clock-screen.light .pomo-buttons button { border-color: rgba(0,0,0,.14); background: rgba(0,0,0,.05); }
+@media (max-height: 200px) { #pomo-panel .pomo-buttons { display: none; } }
+@media (max-height: 140px) { #pomo-panel { display: none; } }
+
+.empty-actions { display: flex; gap: 8px; -webkit-app-region: no-drag; }
+.empty-actions button { height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.05); color: var(--text); cursor: pointer; }
+.empty-actions button:hover { background: rgba(255,255,255,.1); }
+@media (max-height: 240px) { .empty-actions { display: none; } }
+
+/* ---- settings tabs ---- */
+.settings-tabs { display: flex; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--line); overflow-x: auto; flex: none; }
+.settings-tabs button { flex: none; height: 30px; padding: 0 11px; border: 0; border-bottom: 2px solid transparent;
+  background: none; color: var(--muted); cursor: pointer; font-size: 12.5px; }
+.settings-tabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--accent); }
+.settings-body h3 { margin: 6px 0 -4px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 380px) { .row2 { grid-template-columns: 1fr; } }
+.settings-body .field { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+.settings-body .field input[type=text], .settings-body .field input[type=number], .settings-body .field select, .settings-body textarea {
+  height: 32px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.05); padding: 0 8px; color: var(--text); width: 100%; user-select: text; }
+.settings-body textarea { height: 90px; padding: 6px 8px; resize: vertical; font: inherit; }
+.settings-body .field input.bad { border-color: var(--danger); }
+.field .err { color: var(--danger); font-size: 11px; min-height: 0; }
+.dur { display: flex; gap: 4px; }
+.dur input { flex: 1; min-width: 0; }
+.dur button, .mini-btn { width: 30px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.06); cursor: pointer; flex: none; }
+.dur button:hover, .mini-btn:hover { background: rgba(255,255,255,.13); }
+.field .reset { color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; text-decoration: underline; width: fit-content; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text); font-size: 13px; cursor: pointer; }
+.toggle input { width: 34px; height: 20px; appearance: none; border-radius: 999px; background: rgba(255,255,255,.18); position: relative; cursor: pointer; flex: none; transition: background var(--fade); }
+.toggle input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform var(--fade); }
+.toggle input:checked { background: var(--accent); }
+.toggle input:checked::after { transform: translateX(14px); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.chips button.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+.chips button .x { opacity: .6; }
+.chips button .x:hover { opacity: 1; }
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.theme-grid button { height: 54px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; display: grid; place-items: center;
+  font-size: 11px; font-weight: 600; padding: 0; overflow: hidden; }
+.theme-grid button.on { border-color: var(--accent); }
+.theme-grid .tnum { font-size: 17px; line-height: 1; }
+.colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.colors label { display: grid; gap: 3px; font-size: 11px; color: var(--muted); }
+.colors input[type=color] { width: 100%; height: 28px; border: 1px solid var(--line); border-radius: 6px; background: none; padding: 0 2px; cursor: pointer; }
+.snd-row { display: grid; grid-template-columns: 96px 1fr 70px 30px; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.snd-row select { height: 30px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--text); min-width: 0; }
+.snd-row input[type=range] { width: 100%; }
+.days { display: flex; gap: 4px; flex-wrap: wrap; }
+.days label { display: flex; align-items: center; gap: 3px; font-size: 12px; color: var(--text); }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.stat-grid div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.stat-grid b { display: block; font-size: 18px; color: var(--text); }
+.stat-grid span { font-size: 11px; color: var(--muted); }
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 90px; }
+.bars div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); height: 100%; justify-content: flex-end; }
+.bars i { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent); min-height: 2px; }
+
+/* settings: beat the generic `.settings-body label { display: grid }` from styles.css */
+.settings-body label.toggle { display: flex; grid-template-columns: none; color: var(--text); font-size: 13px; }
+.settings-body label.days, .days label { display: flex; grid-template-columns: none; }
+.settings-body .reset { color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: 0; padding: 0;
+  height: auto; text-align: left; text-decoration: underline; width: fit-content; }
+.settings-body .reset:hover { color: var(--text); background: none; }

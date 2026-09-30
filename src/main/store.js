@@ -1,9 +1,13 @@
 // Tiny JSON store in %APPDATA%\FloatView\floatview.json. Local only.
 const fs = require('node:fs');
 const path = require('node:path');
+const clock = require('./clock-settings');
 
 const DEFAULTS = {
+  stats: {},   // { 'YYYY-MM-DD': { focusSessions, focusSec, moveTaken, moveSnoozed, moveSkipped, longestSitSec } }
+  windowByMode: {}, // { clock: { x, y, w, h } } — Video / Video+Clock use `window`
   settings: {
+    ...clock.DEFAULTS,
     opacity: 1,
     clickThroughOpacity: 0.6,
     defaultCorner: 'bottom-right',
@@ -23,6 +27,10 @@ const DEFAULTS = {
       togglePin: 'Ctrl+Alt+P',
       sizeUp: 'Ctrl+Alt+=',
       sizeDown: 'Ctrl+Alt+-',
+      cycleView: 'Ctrl+Alt+C',
+      pomoToggle: 'Ctrl+Alt+S',
+      moveBreakNow: 'Ctrl+Alt+B',
+      moveSnooze: 'Ctrl+Alt+N',
     },
   },
   window: null, // { x, y, w, h, displayId, aspect }
