@@ -4,6 +4,7 @@ const path = require('node:path');
 const clock = require('./clock-settings');
 
 const DEFAULTS = {
+  hideTipShown: false,
   stats: {},   // { 'YYYY-MM-DD': { focusSessions, focusSec, moveTaken, moveSnoozed, moveSkipped, longestSitSec } }
   windowByMode: {}, // { clock: { x, y, w, h } } — Video / Video+Clock use `window`
   settings: {

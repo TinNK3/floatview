@@ -1,6 +1,6 @@
 const {
   app, BrowserWindow, ipcMain, globalShortcut, Tray, Menu, screen, shell,
-  session, powerSaveBlocker, dialog, nativeImage,
+  session, powerSaveBlocker, dialog, nativeImage, Notification,
 } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -142,7 +142,9 @@ function createWindow() {
   // Never navigate the shell page away from our UI.
   win.webContents.on('will-navigate', (e) => e.preventDefault());
 
-  win.on('blur', () => { if (state.pinned) { applyTopmost(); win.moveTop(); } });
+  // Hiding the window also fires 'blur'. Re-applying topmost then would show it again
+  // (on Windows, setAlwaysOnTop/moveTop make a hidden window visible), so skip hidden windows.
+  win.on('blur', () => { if (state.pinned && !state.hidden && win.isVisible()) { applyTopmost(); win.moveTop(); } });
   win.on('moved', () => { snapToEdges(); saveBounds(); });
   win.on('resized', saveBounds);
   // Live "W × H" label while the user drags an edge.
@@ -158,7 +160,7 @@ function createWindow() {
 }
 
 function applyTopmost() {
-  if (!win) return;
+  if (!win || state.hidden) return;
   win.setAlwaysOnTop(state.pinned, 'screen-saver');
   if (state.pinned) win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 }
@@ -205,6 +207,14 @@ function hideWindow() {
   if (!win) return;
   state.hidden = true;
   win.hide();
+  // First time only: say where it went, so ✕ doesn't look like it did nothing / quit.
+  if (!store.get('hideTipShown') && !process.env.FLOATVIEW_TEST && Notification.isSupported()) {
+    const n = new Notification({ title: 'FloatView is still running', icon: ICON, silent: true,
+      body: 'It is hidden in the tray (bottom-right, near the clock). Press Ctrl+Alt+H to show it again, or right-click the tray icon → Quit to close it.' });
+    n.on('click', showWindow);
+    n.show();
+    store.set('hideTipShown', true);
+  }
   send('command', 'pause');
   sendState();
 }
@@ -644,6 +654,6 @@ app.on('window-all-closed', () => app.quit());
 if (process.env.FLOATVIEW_TEST) {
   global.__floatview = {
     get win() { return win; }, get state() { return state; }, get store() { return store; }, get clock() { return clock; },
-    setViewMode,
+    setViewMode, showWindow, hideWindow,
   };
 }

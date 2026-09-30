@@ -155,6 +155,16 @@ async function open(page, link) {
   ok('size panel opens', await page.$eval('#size-menu', (e) => !e.hidden));
   await page.keyboard.press('Escape');
 
+  // The close button hides the window — and it must STAY hidden (regression: the
+  // always-on-top guard used to show it again on the blur that hiding causes).
+  await page.evaluate(() => { document.body.classList.add('active'); });
+  await page.click('#btn-close');
+  await sleep(1500);
+  ok('close button hides the window and it stays hidden', await app.evaluate(() => !global.__floatview.win.isVisible()));
+  await app.evaluate(() => global.__floatview.showWindow());
+  await sleep(600);
+  ok('window comes back from the tray', await app.evaluate(() => global.__floatview.win.isVisible() && global.__floatview.win.isAlwaysOnTop()));
+
   // Pause via global-hotkey path
   await app.evaluate(() => global.__floatview.win.webContents.send('command', 'pause'));
   await sleep(1200);
