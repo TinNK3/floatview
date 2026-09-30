@@ -1,7 +1,7 @@
 {
   "name": "floatview",
   "productName": "FloatView",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Paste a link, watch the video in a floating always-on-top window.",
   "main": "src/main/main.js",
   "private": true,
@@ -9,7 +9,7 @@
     "start": "electron .",
     "test": "node --test test/unit/*.test.js",
     "smoke": "node test/smoke.js",
-    "dist": "electron-builder --win nsis"
+    "dist": "electron-builder --win nsis portable"
   },
   "build": {
     "appId": "local.floatview",
@@ -28,14 +28,21 @@
       "!node_modules/hls.js/src/**"
     ],
     "win": {
-      "target": "nsis",
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "assets/icon.png"
     },
     "nsis": {
       "perMachine": false,
-      "oneClick": true
+      "oneClick": true,
+      "artifactName": "FloatView-Setup-${version}.${ext}"
     },
-    "publish": null
+    "publish": null,
+    "portable": {
+      "artifactName": "FloatView-${version}-portable.${ext}"
+    }
   },
   "devDependencies": {
     "electron": "^44.4.5",

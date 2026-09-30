@@ -21,6 +21,8 @@ const DEFAULTS = {
       seekForward: 'Ctrl+Alt+Right',
       toggleHide: 'Ctrl+Alt+H',
       togglePin: 'Ctrl+Alt+P',
+      sizeUp: 'Ctrl+Alt+=',
+      sizeDown: 'Ctrl+Alt+-',
     },
   },
   window: null, // { x, y, w, h, displayId, aspect }

@@ -39,6 +39,7 @@
       <button class="icon" id="btn-new" title="Open new link (N)"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
       <button class="icon" id="btn-clickthrough" title="Click-through (Ctrl+Alt+T)"><svg viewBox="0 0 24 24"><path d="M5 3l6 16 2.2-6.8L20 10z"/><path d="M13.2 12.2L19 18"/></svg></button>
       <button class="icon" id="btn-pin" title="Always on top (Ctrl+Alt+P)"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8"/></svg></button>
+      <button class="icon" id="btn-size" title="Window size (Ctrl+Alt+= / −)" aria-expanded="false" aria-controls="size-menu"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button>
       <button class="icon" id="btn-mini" title="Mini size"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="6" height="5" class="fill"/></svg></button>
       <button class="icon" id="btn-settings" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
       <button class="icon danger" id="btn-close" title="Hide to tray (Ctrl+Alt+H)"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -71,6 +72,34 @@
       </select>
     </div>
   </footer>
+
+  <!-- Size panel -->
+  <div id="size-menu" hidden role="dialog" aria-label="Window size">
+    <div class="presets">
+      <button data-preset="small">Small</button>
+      <button data-preset="medium">Medium</button>
+      <button data-preset="large">Large</button>
+      <button data-preset="huge">Huge</button>
+    </div>
+    <div class="steps">
+      <button id="size-down" title="Smaller (−)">−</button>
+      <span id="size-now">480 × 270</span>
+      <button id="size-up" title="Bigger (+)">+</button>
+    </div>
+    <form id="size-form" class="custom" autocomplete="off">
+      <label for="size-width">Width</label>
+      <input id="size-width" type="number" min="200" max="7680" step="10" inputmode="numeric">
+      <span>px</span>
+      <button type="submit" class="primary">Set</button>
+    </form>
+  </div>
+
+  <div id="size-badge" hidden></div>
+
+  <!-- Drag to resize (the Windows resize border sits just outside the window and is hard to find) -->
+  <div id="grip" class="overlay" title="Drag to resize">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 6L6 14M14 10l-4 4"/></svg>
+  </div>
 
   <div id="loading" hidden><div class="spinner"></div></div>
 

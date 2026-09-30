@@ -124,6 +124,8 @@ function createWindow() {
   win.on('blur', () => { if (state.pinned) { applyTopmost(); win.moveTop(); } });
   win.on('moved', () => { snapToEdges(); saveBounds(); });
   win.on('resized', saveBounds);
+  // Live "W × H" label while the user drags an edge.
+  win.on('resize', () => { const [w, h] = win.getSize(); send('size', { w, h }); });
   win.on('close', (e) => {
     if (!app.isQuitting) { e.preventDefault(); hideWindow(); }
   });
@@ -219,6 +221,72 @@ function setAspect(r) {
   const x = Math.min(Math.max(b.x, wa.x), wa.x + wa.width - width);
   const y = Math.min(Math.max(b.y, wa.y), wa.y + wa.height - height);
   win.setBounds({ x, y, width, height });
+}
+
+// ---- size presets ------------------------------------------------------------
+// Presets are a share of the screen's width, so they feel the same on any monitor.
+const SIZE_PRESETS = { small: 0.2, medium: 0.33, large: 0.5, huge: 0.75 };
+const MIN_W = 200, MIN_H = 112;
+
+// Resize to `width` px, keeping the video's shape. The corner nearest the screen
+// edge stays put, so a window in the bottom-right corner grows up and to the left.
+function resizeTo(width) {
+  if (!win) return;
+  if (state.mini) { state.mini = false; win.setAspectRatio(state.aspect || 0); }
+  const b = win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  const ratio = state.aspect || b.width / b.height;
+  let w = Math.round(Math.min(Math.max(width, MIN_W), wa.width));
+  let h = Math.round(w / ratio);
+  if (h > wa.height) { h = wa.height; w = Math.round(h * ratio); }
+  if (h < MIN_H) { h = MIN_H; w = Math.round(h * ratio); }
+  const right = b.x + b.width / 2 > wa.x + wa.width / 2;
+  const bottom = b.y + b.height / 2 > wa.y + wa.height / 2;
+  let x = right ? b.x + b.width - w : b.x;
+  let y = bottom ? b.y + b.height - h : b.y;
+  x = Math.min(Math.max(x, wa.x), wa.x + wa.width - w);
+  y = Math.min(Math.max(y, wa.y), wa.y + wa.height - h);
+  win.setBounds({ x, y, width: w, height: h });
+  saveBounds();
+  sendState();
+}
+
+// Drag-resize from the in-window grip (bottom-right). Top-left corner stays fixed.
+let gripStart = null;
+function gripResize(phase, dx = 0, dy = 0) {
+  if (!win) return;
+  if (phase === 'start') {
+    if (state.mini) { state.mini = false; win.setAspectRatio(state.aspect || 0); }
+    gripStart = win.getBounds();
+    return;
+  }
+  if (phase === 'end') { gripStart = null; saveBounds(); sendState(); return; }
+  if (!gripStart) return;
+  const s = gripStart;
+  const wa = screen.getDisplayMatching(s).workArea;
+  const maxW = wa.x + wa.width - s.x, maxH = wa.y + wa.height - s.y;
+  let w, h;
+  if (state.aspect) {
+    const r = state.aspect;
+    // Follow whichever direction the pointer moved more.
+    w = Math.abs(dx) >= Math.abs(dy * r) ? s.width + dx : (s.height + dy) * r;
+    w = Math.min(Math.max(w, MIN_W, MIN_H * r), maxW, maxH * r);
+    h = w / r;
+  } else {
+    w = Math.min(Math.max(s.width + dx, MIN_W), maxW);
+    h = Math.min(Math.max(s.height + dy, MIN_H), maxH);
+  }
+  win.setBounds({ x: s.x, y: s.y, width: Math.round(w), height: Math.round(h) });
+}
+
+function resizePreset(name) {
+  const share = SIZE_PRESETS[name];
+  if (!share || !win) return;
+  resizeTo(screen.getDisplayMatching(win.getBounds()).workArea.width * share);
+}
+
+function resizeBy(factor) {
+  if (win) resizeTo(win.getBounds().width * factor);
 }
 
 function setPinned(on) {
@@ -319,6 +387,15 @@ function refreshTray() {
     { label: 'Always on top', type: 'checkbox', checked: state.pinned, click: (i) => setPinned(i.checked) },
     { label: 'Click-through', type: 'checkbox', checked: state.clickThrough, click: (i) => setClickThrough(i.checked) },
     { label: 'Mini size', type: 'checkbox', checked: state.mini, click: toggleMini },
+    { label: 'Size', submenu: [
+      { label: 'Small', click: () => resizePreset('small') },
+      { label: 'Medium', click: () => resizePreset('medium') },
+      { label: 'Large', click: () => resizePreset('large') },
+      { label: 'Huge', click: () => resizePreset('huge') },
+      { type: 'separator' },
+      { label: 'Bigger\tCtrl+Alt+=', click: () => resizeBy(1.15) },
+      { label: 'Smaller\tCtrl+Alt+-', click: () => resizeBy(1 / 1.15) },
+    ] },
     { type: 'separator' },
     { label: 'Settings…', click: () => { showWindow(); win.focus(); send('command', 'settings'); } },
     { label: 'Quit FloatView', click: quit },
@@ -335,6 +412,8 @@ const HOTKEY_ACTIONS = {
   seekForward: () => send('command', 'seek-forward'),
   toggleHide: () => (state.hidden ? showWindow() : hideWindow()),
   togglePin: () => setPinned(!state.pinned),
+  sizeUp: () => resizeBy(1.15),
+  sizeDown: () => resizeBy(1 / 1.15),
 };
 
 function registerHotkeys() {
@@ -358,6 +437,7 @@ function publicState() {
   return {
     pinned: state.pinned, clickThrough: state.clickThrough, hidden: state.hidden,
     mini: state.mini, opacity: state.opacity, hotkeyErrors: state.hotkeyErrors || [],
+    size: win && !win.isDestroyed() ? win.getSize() : null,
   };
 }
 
@@ -433,6 +513,16 @@ ipcMain.on('window', (_e, action, arg) => {
     case 'hide': hideWindow(); break;
     case 'quit': quit(); break;
     case 'mini': toggleMini(); break;
+    case 'size-preset': resizePreset(String(arg)); break;
+    case 'grip-start': gripResize('start'); break;
+    case 'grip-end': gripResize('end'); break;
+    case 'grip-move': {
+      const dx = Number(arg?.dx), dy = Number(arg?.dy);
+      if (Number.isFinite(dx) && Number.isFinite(dy)) gripResize('move', dx, dy);
+      break;
+    }
+    case 'size-by': { const f = Number(arg); if (f >= 0.5 && f <= 2) resizeBy(f); break; }
+    case 'size-width': { const w = Number(arg); if (Number.isFinite(w)) resizeTo(w); break; }
     case 'pin': setPinned(!state.pinned); break;
     case 'click-through': setClickThrough(!state.clickThrough); break;
     case 'opacity': setOpacity(Number(arg)); break;

@@ -23,4 +23,5 @@ contextBridge.exposeInMainWorld('floatview', {
   onCommand: on('command'),
   onCursor: on('cursor'),
   onHandleHot: on('handle-hot'),
+  onSize: on('size'),
 });

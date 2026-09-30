@@ -5,7 +5,7 @@
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0b0c0f?logo=windows&logoColor=6aa7ff">
   <img alt="Electron 44" src="https://img.shields.io/badge/Electron-44-0b0c0f?logo=electron&logoColor=6aa7ff">
-  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-6aa7ff">
+  <img alt="Version 0.1.1" src="https://img.shields.io/badge/version-0.1.1-6aa7ff">
   <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-0b0c0f">
 </p>
 
@@ -14,13 +14,21 @@
 Paste a video link → it plays in a small floating window that **stays on top of every other window**.
 Local only: no accounts, no telemetry, nothing leaves the PC except the video stream itself.
 
-| Playing on top | Paste a link | Click-through mode |
+| Playing on top | Paste a link | Resize big or small |
 |---|---|---|
-| ![Player with controls](docs/screenshot-player.png) | ![Link box with recent links](docs/screenshot-link.png) | ![Click-through mode](docs/screenshot-click-through.png) |
+| ![Player with controls](docs/screenshot-player.png) | ![Link box with recent links](docs/screenshot-link.png) | ![Size panel](docs/screenshot-size.png) |
 
 ## Install
-Run `dist\FloatView Setup 0.1.0.exe` (per-user, no admin needed). It installs to
-`%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
+Two builds (`npm run dist` → `dist\`):
+- **`FloatView-Setup-0.1.1.exe`** — installs per-user (no admin) to `%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
+- **`FloatView-0.1.1-portable.exe`** — one file, no install; double-click to run (first start takes a few seconds while it unpacks).
+
+## Resize: big or small
+- **Drag the grip** in the bottom-right corner (shows on hover). The window keeps the video's shape.
+- **Size button** (↗↙ in the top bar): *Small* / *Medium* / *Large* / *Huge* (20 / 33 / 50 / 75 % of the screen width), **−** / **+** steps, or type an exact width in px.
+- **Keys:** `Ctrl+Alt+=` bigger · `Ctrl+Alt+-` smaller (from any app), or `+` / `-` inside the window.
+- The window edge also works: grab just outside the border, like any Windows window.
+- A size label (e.g. `960 × 540`) appears while you resize. The window never grows past the screen.
 
 ## Use
 - Paste a link and press **Play**, or press **Ctrl+V** anywhere in the window, or drag a link/file onto it.
@@ -37,6 +45,7 @@ Run `dist\FloatView Setup 0.1.0.exe` (per-user, no admin needed). It installs to
 | `Ctrl+Alt+← / →` | Seek −/+10 s |
 | `Ctrl+Alt+H` | Hide / show |
 | `Ctrl+Alt+P` | Always-on-top on/off |
+| `Ctrl+Alt+=` / `Ctrl+Alt+-` | Bigger / smaller window |
 
 Inside the window: `Space`/`K` play, `←/→` seek 5 s, `↑/↓` volume, `M` mute, `N` new link, `Esc` close panels.
 In click-through mode, hover the lock in the top-right corner and click it to turn click-through off.

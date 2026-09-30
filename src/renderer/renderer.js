@@ -224,7 +224,11 @@ api.onCommand((c) => {
 let lastCursor = { x: -1, y: -1 };
 let idleTimer = null;
 api.onCursor(({ inside, x, y }) => {
-  if (!inside) { lastCursor = { x: -1, y: -1 }; return setActive(false); }
+  if (!inside) {
+    lastCursor = { x: -1, y: -1 };
+    if (!sizeMenu.hidden) openSizeMenu(false);
+    return setActive(false);
+  }
   const moved = x !== lastCursor.x || y !== lastCursor.y;
   lastCursor = { x, y };
   const overBars = y < 40 || y > window.innerHeight - 64;
@@ -270,8 +274,9 @@ $('error-new').addEventListener('click', () => { hideError(); showLinkSheet(); }
 
 // Keyboard (only while FloatView has focus; global hotkeys live in the main process).
 document.addEventListener('keydown', (e) => {
-  const typing = e.target.matches('input[type=text], select');
+  const typing = e.target.matches('input[type=text], input[type=number], select');
   if (e.key === 'Escape') {
+    if (!sizeMenu.hidden) return openSizeMenu(false);
     if (!ui.settings.hidden) return closeSettings();
     if (body.classList.contains('show-link')) return body.classList.remove('show-link');
     return hideError();
@@ -284,6 +289,8 @@ document.addEventListener('keydown', (e) => {
     ArrowDown: () => player?.cmd('volume', Math.max(0, (session?.last?.volume ?? 1) - 0.1)),
     m: () => player?.cmd('muted', !body.classList.contains('muted')),
     n: () => showLinkSheet(),
+    '+': () => api.window('size-by', 1.15), '=': () => api.window('size-by', 1.15),
+    '-': () => api.window('size-by', 1 / 1.15),
   };
   const fn = actions[e.key.length === 1 ? e.key.toLowerCase() : e.key];
   if (fn && !e.target.matches('input[type=range]')) { e.preventDefault(); fn(); }
@@ -291,7 +298,7 @@ document.addEventListener('keydown', (e) => {
 
 // Ctrl+V anywhere (outside the text box) opens the pasted link right away.
 document.addEventListener('paste', (e) => {
-  if (e.target.matches('input[type=text]')) return;
+  if (e.target.matches('input[type=text], input[type=number]')) return;
   const text = e.clipboardData?.getData('text/plain');
   if (text) { e.preventDefault(); openLink(text); }
 });
@@ -304,6 +311,66 @@ document.addEventListener('drop', (e) => {
   if (file) return openLink(api.pathForFile(file));
   const text = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
   if (text) openLink(text.split(/\r?\n/).find((l) => l && !l.startsWith('#')));
+});
+
+// ------------------------------------------------------------------ window size
+
+const sizeMenu = $('size-menu');
+const sizeBadge = $('size-badge');
+
+function openSizeMenu(open = sizeMenu.hidden) {
+  sizeMenu.hidden = !open;
+  $('btn-size').setAttribute('aria-expanded', String(open));
+  $('btn-size').classList.toggle('on', open);
+  if (open) api.getState().then((s) => s.size && showSize(s.size[0], s.size[1], false));
+}
+
+function showSize(w, h, badge = true) {
+  $('size-now').textContent = `${w} × ${h}`;
+  if (document.activeElement !== $('size-width')) $('size-width').value = w;
+  if (!badge) return;
+  sizeBadge.textContent = `${w} × ${h}`;
+  sizeBadge.hidden = false;
+  clearTimeout(showSize.t);
+  showSize.t = setTimeout(() => { sizeBadge.hidden = true; }, 900);
+}
+
+api.onSize(({ w, h }) => showSize(w, h));
+
+// Resize grip: screen coordinates, so moving the window under the pointer doesn't matter.
+const grip = $('grip');
+let gripFrom = null;
+grip.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  grip.setPointerCapture(e.pointerId);
+  gripFrom = { x: e.screenX, y: e.screenY };
+  body.classList.add('gripping');
+  api.window('grip-start');
+});
+grip.addEventListener('pointermove', (e) => {
+  if (!gripFrom) return;
+  api.window('grip-move', { dx: e.screenX - gripFrom.x, dy: e.screenY - gripFrom.y });
+});
+const gripEnd = () => {
+  if (!gripFrom) return;
+  gripFrom = null;
+  body.classList.remove('gripping');
+  api.window('grip-end');
+};
+grip.addEventListener('pointerup', gripEnd);
+grip.addEventListener('pointercancel', gripEnd);
+grip.addEventListener('lostpointercapture', gripEnd);
+
+$('btn-size').addEventListener('click', () => openSizeMenu());
+sizeMenu.querySelectorAll('[data-preset]').forEach((b) =>
+  b.addEventListener('click', () => api.window('size-preset', b.dataset.preset)));
+$('size-up').addEventListener('click', () => api.window('size-by', 1.15));
+$('size-down').addEventListener('click', () => api.window('size-by', 1 / 1.15));
+$('size-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const w = Number($('size-width').value);
+  if (w >= 200) api.window('size-width', w);
 });
 
 // ------------------------------------------------------------------ link sheet & recent

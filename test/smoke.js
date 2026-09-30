@@ -71,6 +71,11 @@ async function open(page, link) {
     await page.mouse.move(200, 150);
     await sleep(700);
     await page.screenshot({ path: path.join(OUT, `1-${name}.png`) });
+    const blocked = !s?.found && await page.evaluate(async () => {
+      const wv = document.querySelector('#stage webview');
+      try { return /verify the security|are you a robot|captcha|access denied/i.test(await wv.executeJavaScript('document.body.innerText')); } catch { return false; }
+    });
+    if (blocked) { console.log(`SKIP  ${name} plays  (site is showing a bot-check page to this PC; not an app failure)`); continue; }
     ok(`${name} plays`, !!(s?.found && s.currentTime > 1.5), JSON.stringify(s)?.slice(0, 160));
   }
 
@@ -108,6 +113,47 @@ async function open(page, link) {
   await page.evaluate(() => window.floatview.window('click-through'));
   await sleep(300);
   ok('click-through turns off', await app.evaluate(() => !global.__floatview.state.clickThrough));
+
+  // Window size: presets, step, custom width. Must keep the video's shape and stay on screen.
+  const geo = () => app.evaluate(({ screen }) => {
+    const w = global.__floatview.win;
+    return { b: w.getBounds(), wa: screen.getDisplayMatching(w.getBounds()).workArea };
+  });
+  const inside = ({ b, wa }) => b.x >= wa.x && b.y >= wa.y && b.x + b.width <= wa.x + wa.width && b.y + b.height <= wa.y + wa.height;
+  const near = (a, b, tol = 3) => Math.abs(a - b) <= tol;
+  for (const [name, share] of [['small', 0.2], ['large', 0.5], ['huge', 0.75], ['medium', 0.33]]) {
+    await page.evaluate((n) => window.floatview.window('size-preset', n), name);
+    await sleep(400);
+    const g = await geo();
+    ok(`size preset "${name}"`, near(g.b.width, Math.round(g.wa.width * share)) && inside(g) && near(g.b.width / g.b.height, 16 / 9, 0.05),
+      `${g.b.width}×${g.b.height} at ${g.b.x},${g.b.y}`);
+  }
+  let g0 = await geo();
+  await page.evaluate(() => window.floatview.window('size-by', 1.15));
+  await sleep(400);
+  let g1 = await geo();
+  ok('bigger step grows ~15%', near(g1.b.width, Math.round(g0.b.width * 1.15), 3), `${g0.b.width} -> ${g1.b.width}`);
+  await page.evaluate(() => window.floatview.window('size-width', 640));
+  await sleep(400);
+  g1 = await geo();
+  ok('custom width 640', g1.b.width === 640 && near(g1.b.height, 360, 2) && inside(g1), `${g1.b.width}×${g1.b.height}`);
+  await page.evaluate(() => window.floatview.window('size-width', 50));
+  await sleep(400);
+  g1 = await geo();
+  ok('too small is clamped to the minimum', g1.b.width >= 200 && g1.b.height >= 112, `${g1.b.width}×${g1.b.height}`);
+  await page.evaluate(() => window.floatview.window('size-width', 99999));
+  await sleep(400);
+  g1 = await geo();
+  ok('too big is clamped to the screen', inside(g1), `${g1.b.width}×${g1.b.height}`);
+  await page.evaluate(() => window.floatview.window('size-preset', 'medium'));
+  await sleep(300);
+
+  // Size panel opens and shows the current size
+  await page.evaluate(() => { document.body.classList.add('active'); document.getElementById('btn-size').click(); });
+  await sleep(300);
+  await page.screenshot({ path: path.join(OUT, '4-size-menu.png') });
+  ok('size panel opens', await page.$eval('#size-menu', (e) => !e.hidden));
+  await page.keyboard.press('Escape');
 
   // Pause via global-hotkey path
   await app.evaluate(() => global.__floatview.win.webContents.send('command', 'pause'));
