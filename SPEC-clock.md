@@ -32,6 +32,8 @@ Alex works long hours at the desk. FloatView already keeps a video on top. Now i
 
 ## 3. Flip clock
 
+> **Themes are collected and previewed (2026-09-29):** 15 themes, 10 OFL font families and 13 CC0 sounds, catalogued in [docs/THEMES.md](docs/THEMES.md). Live preview: `docs/themes/gallery.html`. The styles below map to theme `kind`: flip → Flip cards, text → Text only / Minimal, segment → LED.
+
 ### 3.1 Clock styles
 | Style | Look | Works in |
 |---|---|---|
@@ -47,7 +49,8 @@ Alex works long hours at the desk. FloatView already keeps a video on top. Now i
 | Seconds | show / hide | hide |
 | Date line | off / "Mon 29 Sep" / full date | off |
 | Theme | Dark, Light, Accent (blue), OLED black, custom colors (card, digit, background) | Dark |
-| Font | 4 built-in, locally bundled free fonts (e.g. Inter, JetBrains Mono, Bebas Neue, Space Grotesk — all OFL) | JetBrains Mono |
+| Theme preset | any of the 15 in `assets/themes/themes.json`, then tweak any color/font below | Midnight |
+| Font | 10 bundled OFL families: JetBrains Mono, Inter, Space Mono, Bebas Neue, Oswald, Orbitron, Share Tech Mono, VT323, Barlow Condensed, DSEG7 | from the theme |
 | Size (overlay) | S / M / L / XL, or drag to scale | M |
 | Position (overlay) | 9 anchor points (corners, edges, center) or free drag; snaps to the anchors | top-right |
 | Opacity (overlay) | 20–100 % | 85 % |
@@ -155,7 +158,7 @@ About 20 short, safe suggestions such as: stand and look 20 m away for 20 s (eye
 
 ## 6. Sounds
 
-- **Built-in sounds are synthesized in the app** (Web Audio): *Soft chime, Bell, Wood block, Digital beep, Rising tone, Gentle marimba, Tick*. No downloaded audio files, so there are no licensing issues and no network use.
+- **Built-in sounds: 13 CC0 sound effects by Kenney**, bundled in `assets/sounds/` (listed in `sounds.json` with a per-sound gain to even out loudness). CC0 means no attribution is required and they can ship inside the installer; `LICENSES.md` records the source of every file. *(Updated 2026-09-29: this replaces the earlier idea of synthesizing sounds. Web Audio synthesis stays as a fallback only.)*
 - **Your own sounds:** add `.mp3 / .wav / .ogg` (≤ 5 MB each). They are copied into `%APPDATA%\FloatView\sounds`, so they keep working if the original file moves.
 - You pick a sound for each event: **Focus start · Focus end · Break start · Break end · Move reminder · Tick**. Each one can be *None*.
 - Volume per sound plus a master volume, with a **▶ Preview** button next to each.

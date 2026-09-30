@@ -1,0 +1,467 @@
+{
+  "$comment": "FloatView clock themes. kind: flip = split-flap cards, text = digits only (made for video overlay), segment = 7-segment LED. Colors are hex. 'inspiredBy' credits the palette's origin; palettes are used under their MIT licenses and are re-mixed, not copied as-is. Optional: font.scale (digit size multiplier for wide/narrow fonts), colors.meta (date/label color), separator (\"none\" | \"colon\"; flip defaults to none). Names of third-party palettes are used only to credit the source; FloatView is not affiliated with or endorsed by those projects.",
+  "version": 1,
+  "themes": [
+    {
+      "id": "midnight",
+      "name": "Midnight",
+      "group": "FloatView",
+      "kind": "flip",
+      "font": {
+        "family": "JetBrains Mono",
+        "weight": 700,
+        "tracking": "-0.02em"
+      },
+      "colors": {
+        "bg": "#0b0c0f",
+        "bg2": "#141a26",
+        "cardTop": "#1f222b",
+        "cardBottom": "#191b22",
+        "digit": "#eceef3",
+        "hinge": "#07080a",
+        "accent": "#6aa7ff",
+        "muted": "#7d8494",
+        "glow": null
+      },
+      "card": {
+        "radius": 0.08,
+        "shadow": "0 18px 40px rgba(0,0,0,.55)"
+      },
+      "inspiredBy": null
+    },
+    {
+      "id": "paper",
+      "name": "Paper",
+      "group": "Classic",
+      "kind": "flip",
+      "font": {
+        "family": "Inter",
+        "weight": 800,
+        "tracking": "-0.04em"
+      },
+      "colors": {
+        "bg": "#e9e5dc",
+        "bg2": "#f4f1ea",
+        "cardTop": "#fdfcf9",
+        "cardBottom": "#f3f1ec",
+        "digit": "#1c1c1e",
+        "hinge": "#cfcac0",
+        "accent": "#e4572e",
+        "muted": "#8a8478",
+        "glow": null
+      },
+      "card": {
+        "radius": 0.07,
+        "shadow": "0 14px 30px rgba(60,50,30,.18)"
+      },
+      "inspiredBy": {
+        "name": "1960s Braun / Dieter Rams product design (look only)",
+        "url": null,
+        "license": null
+      }
+    },
+    {
+      "id": "solari",
+      "name": "Solari",
+      "group": "Classic",
+      "kind": "flip",
+      "font": {
+        "family": "Barlow Condensed",
+        "weight": 700,
+        "tracking": "0",
+        "scale": 1.05
+      },
+      "colors": {
+        "bg": "#0e0e0e",
+        "bg2": "#1a1a1a",
+        "cardTop": "#232323",
+        "cardBottom": "#1b1b1b",
+        "digit": "#f4f1e8",
+        "hinge": "#000000",
+        "accent": "#f5c518",
+        "muted": "#8d8a80",
+        "glow": null
+      },
+      "card": {
+        "radius": 0.04,
+        "shadow": "0 10px 24px rgba(0,0,0,.7)"
+      },
+      "inspiredBy": {
+        "name": "Split-flap departure boards (look only)",
+        "url": null,
+        "license": null
+      }
+    },
+    {
+      "id": "dracula",
+      "name": "Dracula",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Oswald",
+        "weight": 500,
+        "tracking": "0"
+      },
+      "colors": {
+        "bg": "#21222c",
+        "bg2": "#282a36",
+        "cardTop": "#383a4a",
+        "cardBottom": "#313342",
+        "digit": "#f8f8f2",
+        "hinge": "#191a21",
+        "accent": "#bd93f9",
+        "muted": "#6272a4",
+        "glow": null,
+        "accent2": "#ff79c6"
+      },
+      "card": {
+        "radius": 0.08,
+        "shadow": "0 16px 36px rgba(0,0,0,.45)"
+      },
+      "inspiredBy": {
+        "name": "Dracula Theme",
+        "url": "https://draculatheme.com",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "nord",
+      "name": "Nord",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Inter",
+        "weight": 600,
+        "tracking": "-0.03em"
+      },
+      "colors": {
+        "bg": "#2e3440",
+        "bg2": "#3b4252",
+        "cardTop": "#434c5e",
+        "cardBottom": "#3b4252",
+        "digit": "#eceff4",
+        "hinge": "#272c36",
+        "accent": "#88c0d0",
+        "muted": "#7b88a1",
+        "glow": null
+      },
+      "card": {
+        "radius": 0.1,
+        "shadow": "0 14px 30px rgba(0,0,0,.3)"
+      },
+      "inspiredBy": {
+        "name": "Nord",
+        "url": "https://www.nordtheme.com",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "mocha",
+      "name": "Catppuccin Mocha",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Space Mono",
+        "weight": 700,
+        "tracking": "-0.04em"
+      },
+      "colors": {
+        "bg": "#11111b",
+        "bg2": "#1e1e2e",
+        "cardTop": "#313244",
+        "cardBottom": "#2a2b3c",
+        "digit": "#cdd6f4",
+        "hinge": "#181825",
+        "accent": "#cba6f7",
+        "muted": "#7f849c",
+        "glow": null,
+        "accent2": "#f5c2e7"
+      },
+      "card": {
+        "radius": 0.1,
+        "shadow": "0 16px 36px rgba(0,0,0,.45)"
+      },
+      "inspiredBy": {
+        "name": "Catppuccin",
+        "url": "https://catppuccin.com",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "latte",
+      "name": "Catppuccin Latte",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Space Mono",
+        "weight": 700,
+        "tracking": "-0.04em"
+      },
+      "colors": {
+        "bg": "#dce0e8",
+        "bg2": "#eff1f5",
+        "cardTop": "#ffffff",
+        "cardBottom": "#f2f3f7",
+        "digit": "#4c4f69",
+        "hinge": "#ccd0da",
+        "accent": "#8839ef",
+        "muted": "#8c8fa1",
+        "glow": null
+      },
+      "card": {
+        "radius": 0.1,
+        "shadow": "0 12px 28px rgba(76,79,105,.18)"
+      },
+      "inspiredBy": {
+        "name": "Catppuccin",
+        "url": "https://catppuccin.com",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "tokyo",
+      "name": "Tokyo Night",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "JetBrains Mono",
+        "weight": 700,
+        "tracking": "-0.03em"
+      },
+      "colors": {
+        "bg": "#16161e",
+        "bg2": "#1a1b26",
+        "cardTop": "#292e42",
+        "cardBottom": "#232738",
+        "digit": "#c0caf5",
+        "hinge": "#101014",
+        "accent": "#7aa2f7",
+        "muted": "#565f89",
+        "glow": null,
+        "accent2": "#bb9af7"
+      },
+      "card": {
+        "radius": 0.08,
+        "shadow": "0 16px 36px rgba(0,0,0,.5)"
+      },
+      "inspiredBy": {
+        "name": "Tokyo Night",
+        "url": "https://github.com/tokyo-night/tokyo-night-vscode-theme",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "gruvbox",
+      "name": "Gruvbox",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Bebas Neue",
+        "weight": 400,
+        "tracking": "0.01em",
+        "scale": 1.05
+      },
+      "colors": {
+        "bg": "#1d2021",
+        "bg2": "#282828",
+        "cardTop": "#3c3836",
+        "cardBottom": "#32302f",
+        "digit": "#ebdbb2",
+        "hinge": "#161819",
+        "accent": "#fe8019",
+        "muted": "#928374",
+        "glow": null,
+        "accent2": "#fabd2f"
+      },
+      "card": {
+        "radius": 0.06,
+        "shadow": "0 14px 30px rgba(0,0,0,.5)"
+      },
+      "inspiredBy": {
+        "name": "Gruvbox",
+        "url": "https://github.com/morhetz/gruvbox",
+        "license": "MIT/X11"
+      }
+    },
+    {
+      "id": "rosepine",
+      "name": "Rosé Pine",
+      "group": "Dev themes",
+      "kind": "flip",
+      "font": {
+        "family": "Oswald",
+        "weight": 500,
+        "tracking": "0"
+      },
+      "colors": {
+        "bg": "#191724",
+        "bg2": "#1f1d2e",
+        "cardTop": "#2a2740",
+        "cardBottom": "#232136",
+        "digit": "#e0def4",
+        "hinge": "#12101c",
+        "accent": "#ebbcba",
+        "muted": "#6e6a86",
+        "glow": null,
+        "accent2": "#c4a7e7"
+      },
+      "card": {
+        "radius": 0.12,
+        "shadow": "0 16px 36px rgba(0,0,0,.45)"
+      },
+      "inspiredBy": {
+        "name": "Rosé Pine",
+        "url": "https://rosepinetheme.com",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "glass",
+      "name": "Glass",
+      "group": "Overlay",
+      "kind": "text",
+      "font": {
+        "family": "Inter",
+        "weight": 800,
+        "tracking": "-0.05em"
+      },
+      "colors": {
+        "bg": "rgba(12,14,20,.28)",
+        "bg2": null,
+        "cardTop": null,
+        "cardBottom": null,
+        "digit": "#ffffff",
+        "hinge": null,
+        "accent": "#9cc4ff",
+        "muted": "rgba(255,255,255,.7)",
+        "glow": "0 2px 18px rgba(0,0,0,.55)"
+      },
+      "card": {
+        "radius": 0.18,
+        "blur": 14
+      },
+      "inspiredBy": null
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow text",
+      "group": "Overlay",
+      "kind": "text",
+      "font": {
+        "family": "Oswald",
+        "weight": 700,
+        "tracking": "0"
+      },
+      "colors": {
+        "bg": "transparent",
+        "bg2": null,
+        "cardTop": null,
+        "cardBottom": null,
+        "digit": "#ffffff",
+        "hinge": null,
+        "accent": "#ffd166",
+        "muted": "rgba(255,255,255,.8)",
+        "glow": "0 2px 2px rgba(0,0,0,.6), 0 0 22px rgba(0,0,0,.65)"
+      },
+      "card": {
+        "radius": 0
+      },
+      "inspiredBy": null
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "group": "Digital",
+      "kind": "text",
+      "font": {
+        "family": "VT323",
+        "weight": 400,
+        "tracking": "0.02em"
+      },
+      "colors": {
+        "bg": "#030803",
+        "bg2": "#071207",
+        "cardTop": null,
+        "cardBottom": null,
+        "digit": "#5dff7a",
+        "hinge": null,
+        "accent": "#5dff7a",
+        "muted": "#2f8a3e",
+        "glow": "0 0 6px rgba(93,255,122,.8), 0 0 26px rgba(93,255,122,.35)",
+        "meta": "#3fbf57"
+      },
+      "card": {
+        "radius": 0,
+        "scanlines": true
+      },
+      "inspiredBy": null
+    },
+    {
+      "id": "led",
+      "name": "LED",
+      "group": "Digital",
+      "kind": "segment",
+      "font": {
+        "family": "DSEG7 Classic",
+        "weight": 700,
+        "tracking": "0.04em",
+        "metaFamily": "Share Tech Mono"
+      },
+      "colors": {
+        "bg": "#070707",
+        "bg2": "#111111",
+        "cardTop": null,
+        "cardBottom": null,
+        "digit": "#ff453a",
+        "hinge": null,
+        "accent": "#ff453a",
+        "muted": "rgba(255,69,58,.12)",
+        "glow": "0 0 8px rgba(255,69,58,.75), 0 0 28px rgba(255,69,58,.3)",
+        "meta": "rgba(255,69,58,.7)"
+      },
+      "card": {
+        "radius": 0.06,
+        "ghost": true
+      },
+      "inspiredBy": {
+        "name": "DSEG font by keshikan",
+        "url": "https://www.keshikan.net/fonts-e.html",
+        "license": "OFL-1.1"
+      }
+    },
+    {
+      "id": "neon",
+      "name": "Neon",
+      "group": "Digital",
+      "kind": "flip",
+      "font": {
+        "family": "Orbitron",
+        "weight": 900,
+        "tracking": "0.02em",
+        "scale": 0.7,
+        "metaFamily": "Share Tech Mono"
+      },
+      "colors": {
+        "bg": "#0d0221",
+        "bg2": "#2a0b45",
+        "cardTop": "#1a0b33",
+        "cardBottom": "#150828",
+        "digit": "#6ef3ff",
+        "hinge": "#07010f",
+        "accent": "#ff4fd8",
+        "muted": "#7a5fa3",
+        "glow": "0 0 10px rgba(110,243,255,.8), 0 0 30px rgba(255,79,216,.35)",
+        "meta": "#b69be0"
+      },
+      "card": {
+        "radius": 0.1,
+        "shadow": "0 0 0 1px rgba(255,79,216,.35), 0 18px 40px rgba(0,0,0,.6)"
+      },
+      "inspiredBy": {
+        "name": "Synthwave / outrun aesthetic (look only)",
+        "url": null,
+        "license": null
+      }
+    }
+  ]
+}

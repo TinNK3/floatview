@@ -1,0 +1,26 @@
+{
+  "$comment": "Built-in sounds (Kenney, CC0 — see LICENSES.md). gain evens out loudness: the digital sounds measured ~-11 dB mean, bell-clear ~-26 dB. 'defaults' maps timer events to a sound id.",
+  "sounds": [
+    { "id": "start-bright",     "name": "Bright start",    "file": "start-bright.ogg",     "gain": 0.45 },
+    { "id": "chime-steel",      "name": "Steel chime",     "file": "chime-steel.ogg",      "gain": 0.7 },
+    { "id": "chime-steel-alt",  "name": "Marimba",         "file": "chime-steel-alt.ogg",  "gain": 0.7 },
+    { "id": "chime-glass",      "name": "Glass chime",     "file": "chime-glass.ogg",      "gain": 0.75 },
+    { "id": "break-pizzicato",  "name": "Pizzicato",       "file": "break-pizzicato.ogg",  "gain": 0.7 },
+    { "id": "rise-clear",       "name": "Rising",          "file": "rise-clear.ogg",       "gain": 0.4 },
+    { "id": "bell-clear",       "name": "Bell",            "file": "bell-clear.ogg",       "gain": 1.0 },
+    { "id": "nudge-question",   "name": "Nudge",           "file": "nudge-question.ogg",   "gain": 0.45 },
+    { "id": "confirm-soft",     "name": "Soft confirm",    "file": "confirm-soft.ogg",     "gain": 0.6 },
+    { "id": "beep-digital",     "name": "Digital beep",    "file": "beep-digital.ogg",     "gain": 0.5 },
+    { "id": "pop-soft",         "name": "Soft pop",        "file": "pop-soft.ogg",         "gain": 0.7 },
+    { "id": "bong-short",       "name": "Short bong",      "file": "bong-short.ogg",       "gain": 0.8 },
+    { "id": "tick-soft",        "name": "Tick",            "file": "tick-soft.ogg",        "gain": 0.5 }
+  ],
+  "defaults": {
+    "focusStart": "start-bright",
+    "focusEnd": "chime-steel",
+    "breakStart": "break-pizzicato",
+    "breakEnd": "rise-clear",
+    "move": "bell-clear",
+    "tick": null
+  }
+}

@@ -1,0 +1,112 @@
+/* FloatView flip clock. Themed entirely through CSS variables (see applyTheme in flip-clock.js).
+   Size: set --fc-h (card height) on .fc; everything else scales from it. */
+
+.fc {
+  --fc-h: 120px;
+  --fc-w: calc(var(--fc-h) * 1.18);        /* one card holds two digits */
+  --fc-gap: calc(var(--fc-h) * 0.1);
+  --fc-radius: calc(var(--fc-h) * var(--fc-r, 0.08));
+  --fc-font: 'JetBrains Mono', monospace;
+  --fc-weight: 700;
+  --fc-tracking: 0;
+  --fc-digit: #eceef3;
+  --fc-card-top: #1f222b;
+  --fc-card-bottom: #191b22;
+  --fc-hinge: #07080a;
+  --fc-accent: #6aa7ff;
+  --fc-muted: #7d8494;
+  --fc-glow: none;
+  --fc-shadow: 0 18px 40px rgba(0, 0, 0, .55);
+  --fc-flip-ms: 520ms;
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--fc-h) * 0.12);
+  font-family: var(--fc-font);
+  font-weight: var(--fc-weight);
+  color: var(--fc-digit);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.fc-row { display: flex; align-items: center; gap: var(--fc-gap); }
+.fc-sep { width: calc(var(--fc-h) * 0.1); display: grid; gap: calc(var(--fc-h) * 0.16); }
+.fc-sep i { display: block; width: calc(var(--fc-h) * 0.07); height: calc(var(--fc-h) * 0.07); border-radius: 50%;
+  background: var(--fc-muted); margin: 0 auto; }
+.fc-meta { display: flex; gap: calc(var(--fc-h) * 0.14); align-items: baseline; font-size: calc(var(--fc-h) * 0.13);
+  letter-spacing: .08em; text-transform: uppercase; color: var(--fc-meta, var(--fc-muted)); font-weight: 600;
+  font-family: var(--fc-meta-font, var(--fc-font)); }
+.fc-meta .fc-accent { color: var(--fc-accent); }
+.fc-ampm { align-self: flex-end; font-size: calc(var(--fc-h) * 0.16); color: var(--fc-accent);
+  padding-bottom: calc(var(--fc-h) * 0.08); letter-spacing: .05em; }
+
+/* ---- a card (two digits) ---- */
+.fc-card { --ch: var(--fc-h); position: relative; width: calc(var(--ch) * 1.18); height: var(--ch); perspective: calc(var(--ch) * 4);
+  border-radius: calc(var(--ch) * var(--fc-r, 0.08)); box-shadow: var(--fc-shadow); }
+.fc-card.fc-small { --ch: calc(var(--fc-h) * 0.5); align-self: flex-end; }
+
+.fc-half, .fc-flap { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; }
+.fc-half span, .fc-flap span {
+  position: absolute; left: 0; right: 0; height: var(--ch); display: grid; place-items: center;
+  font-size: calc(var(--ch) * 0.78 * var(--fc-scale, 1)); font-feature-settings: "tnum"; line-height: 1; letter-spacing: var(--fc-tracking); text-shadow: var(--fc-glow);
+}
+.fc-top, .fc-flap-top { top: 0; border-radius: calc(var(--ch) * var(--fc-r, 0.08)) calc(var(--ch) * var(--fc-r, 0.08)) 0 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--fc-card-top) 92%, white), var(--fc-card-top)); }
+.fc-bottom, .fc-flap-bottom { bottom: 0; border-radius: 0 0 calc(var(--ch) * var(--fc-r, 0.08)) calc(var(--ch) * var(--fc-r, 0.08));
+  /* darker right under the hinge, fading out by ~30% of the half (like a real flap's shadow) */
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, .28), rgba(0, 0, 0, 0) 30%),
+    linear-gradient(to bottom, var(--fc-card-bottom), color-mix(in srgb, var(--fc-card-bottom) 90%, black)); }
+.fc-top { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+.fc-top span, .fc-flap-top span { top: 0; }
+.fc-bottom span, .fc-flap-bottom span { bottom: 0; }
+
+/* hinge: dark line with a 1px highlight just below it */
+.fc-card::after { content: ''; position: absolute; left: 0; right: 0; top: calc(50% - var(--fc-hinge-w, 1.5px) / 2);
+  height: var(--fc-hinge-w, 1.5px); background: var(--fc-hinge); z-index: 5;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .07); }
+/* the two small pins on the sides of the hinge */
+.fc-card::before { content: ''; position: absolute; z-index: 6; top: calc(50% - var(--ch) * 0.05);
+  left: calc(var(--ch) * -0.02); right: calc(var(--ch) * -0.02); height: calc(var(--ch) * 0.1);
+  background:
+    linear-gradient(var(--fc-hinge), var(--fc-hinge)) left / calc(var(--ch) * 0.035) 100% no-repeat,
+    linear-gradient(var(--fc-hinge), var(--fc-hinge)) right / calc(var(--ch) * 0.035) 100% no-repeat;
+  border-radius: 2px; }
+
+/* no colon between flip cards (classic split-flap look); themes can turn it on */
+.fc[data-kind=flip]:not([data-sep=colon]) .fc-sep { width: calc(var(--fc-h) * 0.02); }
+.fc[data-kind=flip]:not([data-sep=colon]) .fc-sep i { visibility: hidden; }
+
+/* flaps: hidden until a flip runs */
+.fc-flap { z-index: 4; backface-visibility: hidden; visibility: hidden; }
+.fc-flap-top { transform-origin: 50% 100%; }
+.fc-flap-bottom { transform-origin: 50% 0; }
+.fc-card.flipping .fc-flap { visibility: visible; }
+.fc-card.flipping .fc-flap-top { animation: fc-down var(--fc-flip-ms) cubic-bezier(.55, 0, .85, .35) both; }
+.fc-card.flipping .fc-flap-bottom { animation: fc-up var(--fc-flip-ms) cubic-bezier(.2, .7, .3, 1.1) both; }
+@keyframes fc-down { 0% { transform: rotateX(0); filter: brightness(1); } 50%, 100% { transform: rotateX(-90deg); filter: brightness(.6); } }
+@keyframes fc-up { 0%, 50% { transform: rotateX(90deg); filter: brightness(1.35); } 100% { transform: rotateX(0); filter: brightness(1); } }
+
+/* ---- text & segment kinds: digits only ---- */
+.fc[data-kind=text] .fc-card, .fc[data-kind=segment] .fc-card { box-shadow: none; perspective: none; width: auto; }
+.fc[data-kind=text] .fc-card::before, .fc[data-kind=text] .fc-card::after,
+.fc[data-kind=segment] .fc-card::before, .fc[data-kind=segment] .fc-card::after,
+.fc[data-kind=text] .fc-flap, .fc[data-kind=segment] .fc-flap,
+.fc[data-kind=text] .fc-bottom, .fc[data-kind=segment] .fc-bottom { display: none; }
+.fc[data-kind=text] .fc-top, .fc[data-kind=segment] .fc-top { position: relative; height: auto; overflow: visible; background: none; }
+.fc[data-kind=text] .fc-top span, .fc[data-kind=segment] .fc-top span { position: relative; height: auto;
+  padding: 0 calc(var(--fc-h) * 0.02); }
+.fc[data-kind=text] .fc-sep i, .fc[data-kind=segment] .fc-sep i { background: var(--fc-digit); box-shadow: var(--fc-glow); }
+.fc[data-kind=text] .fc-card.flipping .fc-top span { animation: fc-fade 320ms ease-out; }
+@keyframes fc-fade { from { opacity: .25; transform: translateY(-4%); } to { opacity: 1; transform: none; } }
+
+/* 7-segment: faint "88" behind the lit digits */
+.fc[data-kind=segment] .fc-top span { font-size: calc(var(--ch) * 0.64); }
+.fc[data-kind=segment] .fc-top span::before { content: '88'; position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--fc-muted); text-shadow: none; z-index: -1; }
+.fc[data-kind=segment] .fc-sep { width: calc(var(--fc-h) * 0.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-card.flipping .fc-flap { visibility: hidden; animation: none; }
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FloatView Themes</title>
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../src/renderer/clock/flip-clock.css">
+<style>
+  :root { --bg: #0b0c0f; --panel: #14161c; --line: rgba(255,255,255,.08); --text: #eceef3; --muted: #8a91a0; --accent: #6aa7ff; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 Inter, "Segoe UI", system-ui, sans-serif; }
+  header { padding: 48px 48px 8px; max-width: 1480px; margin: 0 auto; }
+  h1 { font: 800 40px/1.1 Inter, sans-serif; letter-spacing: -.03em; margin: 0 0 8px; }
+  header p { color: var(--muted); margin: 0; max-width: 760px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .controls button { height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: #171a21; color: var(--text); cursor: pointer; font: inherit; }
+  .controls button[aria-pressed=true] { background: var(--accent); color: #06142b; border-color: transparent; font-weight: 600; }
+  h2 { font: 700 13px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 40px 0 16px; }
+  main { padding: 0 48px 64px; max-width: 1480px; margin: 0 auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 20px; }
+  .tile { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
+  .stage { height: 250px; display: grid; place-items: center; position: relative; overflow: hidden; }
+  .stage.video { background:
+    radial-gradient(40% 55% at 72% 38%, rgba(255,214,170,.9), rgba(255,214,170,0) 70%),
+    linear-gradient(170deg, transparent 58%, #3f6b3a 58.5%, #2c4f2a 75%),
+    linear-gradient(190deg, transparent 64%, #5c8a45 64.5%, #3d6431 100%),
+    linear-gradient(to bottom, #f3b8c5 0%, #f6d3c4 45%, #c9e2f0 100%); }
+  .stage.scan::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,.25) 0 1px, transparent 1px 3px); }
+  .overlay-card { padding: 14px 22px; border-radius: 18px; }
+  .info { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--line); }
+  .info b { font-size: 15px; }
+  .info span { color: var(--muted); font-size: 12.5px; text-align: right; }
+  .info a { color: var(--muted); }
+  .swatches { display: flex; gap: 4px; padding: 0 18px 16px; }
+  .swatches i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); }
+  .dots { display: flex; gap: 6px; justify-content: center; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--fc-muted); opacity: .5; }
+  .dots i.on { background: var(--fc-accent); opacity: 1; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 14px; overflow: hidden; }
+  td, th { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  td button { height: 30px; width: 30px; border-radius: 50%; border: 0; background: var(--accent); color: #06142b; cursor: pointer; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: rgba(106,167,255,.12); color: #9cc4ff; font-size: 12px; margin-right: 4px; }
+  footer { color: var(--muted); font-size: 12.5px; padding: 0 48px 48px; max-width: 1480px; margin: 0 auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>FloatView themes</h1>
+  <p>15 clock themes and 13 sounds. Everything here is bundled locally — fonts are SIL OFL, sounds are CC0 (Kenney), palettes are inspired by MIT-licensed editor themes. The clocks below are the real component the app will use.</p>
+  <div class="controls">
+    <button id="t24" aria-pressed="true">24 h</button><button id="t12" aria-pressed="false">12 h</button>
+    <button id="tsec" aria-pressed="true">Seconds</button><button id="tdate" aria-pressed="true">Date</button>
+    <button id="tpomo" aria-pressed="false">Show as Pomodoro timer</button>
+  </div>
+</header>
+<main>
+  
+  <h2>FloatView</h2>
+  <div class="grid">
+    <article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #141a26, #0b0c0f);"><div><div class="clock" data-id="midnight"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Midnight</b><span>JetBrains Mono 700 · flip<br>FloatView original</span></div>
+      <div class="swatches"><i title="#0b0c0f" style="background:#0b0c0f"></i><i title="#1f222b" style="background:#1f222b"></i><i title="#eceef3" style="background:#eceef3"></i><i title="#6aa7ff" style="background:#6aa7ff"></i></div>
+    </article>
+  </div>
+  <h2>Classic</h2>
+  <div class="grid">
+    <article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #f4f1ea, #e9e5dc);"><div><div class="clock" data-id="paper"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Paper</b><span>Inter 800 · flip<br>1960s Braun / Dieter Rams product design (look only)</span></div>
+      <div class="swatches"><i title="#e9e5dc" style="background:#e9e5dc"></i><i title="#fdfcf9" style="background:#fdfcf9"></i><i title="#1c1c1e" style="background:#1c1c1e"></i><i title="#e4572e" style="background:#e4572e"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #1a1a1a, #0e0e0e);"><div><div class="clock" data-id="solari"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Solari</b><span>Barlow Condensed 700 · flip<br>Split-flap departure boards (look only)</span></div>
+      <div class="swatches"><i title="#0e0e0e" style="background:#0e0e0e"></i><i title="#232323" style="background:#232323"></i><i title="#f4f1e8" style="background:#f4f1e8"></i><i title="#f5c518" style="background:#f5c518"></i></div>
+    </article>
+  </div>
+  <h2>Dev themes</h2>
+  <div class="grid">
+    <article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #282a36, #21222c);"><div><div class="clock" data-id="dracula"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Dracula</b><span>Oswald 500 · flip<br><a href="https://draculatheme.com">Dracula Theme</a> · MIT</span></div>
+      <div class="swatches"><i title="#21222c" style="background:#21222c"></i><i title="#383a4a" style="background:#383a4a"></i><i title="#f8f8f2" style="background:#f8f8f2"></i><i title="#bd93f9" style="background:#bd93f9"></i><i title="#ff79c6" style="background:#ff79c6"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #3b4252, #2e3440);"><div><div class="clock" data-id="nord"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Nord</b><span>Inter 600 · flip<br><a href="https://www.nordtheme.com">Nord</a> · MIT</span></div>
+      <div class="swatches"><i title="#2e3440" style="background:#2e3440"></i><i title="#434c5e" style="background:#434c5e"></i><i title="#eceff4" style="background:#eceff4"></i><i title="#88c0d0" style="background:#88c0d0"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #1e1e2e, #11111b);"><div><div class="clock" data-id="mocha"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Catppuccin Mocha</b><span>Space Mono 700 · flip<br><a href="https://catppuccin.com">Catppuccin</a> · MIT</span></div>
+      <div class="swatches"><i title="#11111b" style="background:#11111b"></i><i title="#313244" style="background:#313244"></i><i title="#cdd6f4" style="background:#cdd6f4"></i><i title="#cba6f7" style="background:#cba6f7"></i><i title="#f5c2e7" style="background:#f5c2e7"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #eff1f5, #dce0e8);"><div><div class="clock" data-id="latte"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Catppuccin Latte</b><span>Space Mono 700 · flip<br><a href="https://catppuccin.com">Catppuccin</a> · MIT</span></div>
+      <div class="swatches"><i title="#dce0e8" style="background:#dce0e8"></i><i title="#ffffff" style="background:#ffffff"></i><i title="#4c4f69" style="background:#4c4f69"></i><i title="#8839ef" style="background:#8839ef"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #1a1b26, #16161e);"><div><div class="clock" data-id="tokyo"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Tokyo Night</b><span>JetBrains Mono 700 · flip<br><a href="https://github.com/tokyo-night/tokyo-night-vscode-theme">Tokyo Night</a> · MIT</span></div>
+      <div class="swatches"><i title="#16161e" style="background:#16161e"></i><i title="#292e42" style="background:#292e42"></i><i title="#c0caf5" style="background:#c0caf5"></i><i title="#7aa2f7" style="background:#7aa2f7"></i><i title="#bb9af7" style="background:#bb9af7"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #282828, #1d2021);"><div><div class="clock" data-id="gruvbox"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Gruvbox</b><span>Bebas Neue 400 · flip<br><a href="https://github.com/morhetz/gruvbox">Gruvbox</a> · MIT/X11</span></div>
+      <div class="swatches"><i title="#1d2021" style="background:#1d2021"></i><i title="#3c3836" style="background:#3c3836"></i><i title="#ebdbb2" style="background:#ebdbb2"></i><i title="#fe8019" style="background:#fe8019"></i><i title="#fabd2f" style="background:#fabd2f"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #1f1d2e, #191724);"><div><div class="clock" data-id="rosepine"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Rosé Pine</b><span>Oswald 500 · flip<br><a href="https://rosepinetheme.com">Rosé Pine</a> · MIT</span></div>
+      <div class="swatches"><i title="#191724" style="background:#191724"></i><i title="#2a2740" style="background:#2a2740"></i><i title="#e0def4" style="background:#e0def4"></i><i title="#ebbcba" style="background:#ebbcba"></i><i title="#c4a7e7" style="background:#c4a7e7"></i></div>
+    </article>
+  </div>
+  <h2>Overlay</h2>
+  <div class="grid">
+    <article class="tile">
+      <div class="stage video" style=""><div class="overlay-card" style="background:rgba(12,14,20,.28);backdrop-filter:blur(14px);"><div class="clock" data-id="glass"></div></div></div>
+      <div class="info"><b>Glass</b><span>Inter 800 · text<br>FloatView original</span></div>
+      <div class="swatches"><i title="#ffffff" style="background:#ffffff"></i><i title="#9cc4ff" style="background:#9cc4ff"></i></div>
+    </article><article class="tile">
+      <div class="stage video" style=""><div class="overlay-card" style="background:transparent;"><div class="clock" data-id="shadow"></div></div></div>
+      <div class="info"><b>Shadow text</b><span>Oswald 700 · text<br>FloatView original</span></div>
+      <div class="swatches"><i title="#ffffff" style="background:#ffffff"></i><i title="#ffd166" style="background:#ffd166"></i></div>
+    </article>
+  </div>
+  <h2>Digital</h2>
+  <div class="grid">
+    <article class="tile">
+      <div class="stage scan" style="background: radial-gradient(120% 120% at 50% 0%, #071207, #030803);"><div><div class="clock" data-id="terminal"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Terminal</b><span>VT323 400 · text<br>FloatView original</span></div>
+      <div class="swatches"><i title="#030803" style="background:#030803"></i><i title="#5dff7a" style="background:#5dff7a"></i><i title="#5dff7a" style="background:#5dff7a"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #111111, #070707);"><div><div class="clock" data-id="led"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>LED</b><span>DSEG7 Classic 700 · segment<br><a href="https://www.keshikan.net/fonts-e.html">DSEG font by keshikan</a> · OFL-1.1</span></div>
+      <div class="swatches"><i title="#070707" style="background:#070707"></i><i title="#ff453a" style="background:#ff453a"></i><i title="#ff453a" style="background:#ff453a"></i></div>
+    </article><article class="tile">
+      <div class="stage" style="background: radial-gradient(120% 120% at 50% 0%, #2a0b45, #0d0221);"><div><div class="clock" data-id="neon"></div><div class="dots" hidden><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="info"><b>Neon</b><span>Orbitron 900 · flip<br>Synthwave / outrun aesthetic (look only)</span></div>
+      <div class="swatches"><i title="#0d0221" style="background:#0d0221"></i><i title="#1a0b33" style="background:#1a0b33"></i><i title="#6ef3ff" style="background:#6ef3ff"></i><i title="#ff4fd8" style="background:#ff4fd8"></i></div>
+    </article>
+  </div>
+
+  <h2>Sounds</h2>
+  <table>
+    <tr><th></th><th>Sound</th><th>Default for</th><th>File</th></tr>
+    <tr><td><button data-file="start-bright.ogg" data-gain="0.45" aria-label="Play Bright start">▶</button></td><td>Bright start</td><td><span class="tag">focusStart</span></td><td style="color:var(--muted)">start-bright.ogg</td></tr><tr><td><button data-file="chime-steel.ogg" data-gain="0.7" aria-label="Play Steel chime">▶</button></td><td>Steel chime</td><td><span class="tag">focusEnd</span></td><td style="color:var(--muted)">chime-steel.ogg</td></tr><tr><td><button data-file="chime-steel-alt.ogg" data-gain="0.7" aria-label="Play Marimba">▶</button></td><td>Marimba</td><td>—</td><td style="color:var(--muted)">chime-steel-alt.ogg</td></tr><tr><td><button data-file="chime-glass.ogg" data-gain="0.75" aria-label="Play Glass chime">▶</button></td><td>Glass chime</td><td>—</td><td style="color:var(--muted)">chime-glass.ogg</td></tr><tr><td><button data-file="break-pizzicato.ogg" data-gain="0.7" aria-label="Play Pizzicato">▶</button></td><td>Pizzicato</td><td><span class="tag">breakStart</span></td><td style="color:var(--muted)">break-pizzicato.ogg</td></tr><tr><td><button data-file="rise-clear.ogg" data-gain="0.4" aria-label="Play Rising">▶</button></td><td>Rising</td><td><span class="tag">breakEnd</span></td><td style="color:var(--muted)">rise-clear.ogg</td></tr><tr><td><button data-file="bell-clear.ogg" data-gain="1" aria-label="Play Bell">▶</button></td><td>Bell</td><td><span class="tag">move</span></td><td style="color:var(--muted)">bell-clear.ogg</td></tr><tr><td><button data-file="nudge-question.ogg" data-gain="0.45" aria-label="Play Nudge">▶</button></td><td>Nudge</td><td>—</td><td style="color:var(--muted)">nudge-question.ogg</td></tr><tr><td><button data-file="confirm-soft.ogg" data-gain="0.6" aria-label="Play Soft confirm">▶</button></td><td>Soft confirm</td><td>—</td><td style="color:var(--muted)">confirm-soft.ogg</td></tr><tr><td><button data-file="beep-digital.ogg" data-gain="0.5" aria-label="Play Digital beep">▶</button></td><td>Digital beep</td><td>—</td><td style="color:var(--muted)">beep-digital.ogg</td></tr><tr><td><button data-file="pop-soft.ogg" data-gain="0.7" aria-label="Play Soft pop">▶</button></td><td>Soft pop</td><td>—</td><td style="color:var(--muted)">pop-soft.ogg</td></tr><tr><td><button data-file="bong-short.ogg" data-gain="0.8" aria-label="Play Short bong">▶</button></td><td>Short bong</td><td>—</td><td style="color:var(--muted)">bong-short.ogg</td></tr><tr><td><button data-file="tick-soft.ogg" data-gain="0.5" aria-label="Play Tick">▶</button></td><td>Tick</td><td>—</td><td style="color:var(--muted)">tick-soft.ogg</td></tr>
+  </table>
+</main>
+<footer>Fonts: JetBrains Mono, Inter, Space Mono, Bebas Neue, Oswald, Orbitron, Share Tech Mono, VT323, Barlow Condensed (SIL OFL 1.1, via Fontsource) · DSEG7 by keshikan (SIL OFL 1.1). Sounds by Kenney.nl (CC0). Palette credits: Dracula, Nord, Catppuccin, Tokyo Night, Gruvbox, Rosé Pine (MIT).</footer>
+
+<script src="../../src/renderer/clock/flip-clock.js"></script>
+<script>
+  const THEMES = [{"id":"midnight","name":"Midnight","group":"FloatView","kind":"flip","font":{"family":"JetBrains Mono","weight":700,"tracking":"-0.02em"},"colors":{"bg":"#0b0c0f","bg2":"#141a26","cardTop":"#1f222b","cardBottom":"#191b22","digit":"#eceef3","hinge":"#07080a","accent":"#6aa7ff","muted":"#7d8494","glow":null},"card":{"radius":0.08,"shadow":"0 18px 40px rgba(0,0,0,.55)"},"inspiredBy":null},{"id":"paper","name":"Paper","group":"Classic","kind":"flip","font":{"family":"Inter","weight":800,"tracking":"-0.04em"},"colors":{"bg":"#e9e5dc","bg2":"#f4f1ea","cardTop":"#fdfcf9","cardBottom":"#f3f1ec","digit":"#1c1c1e","hinge":"#cfcac0","accent":"#e4572e","muted":"#8a8478","glow":null},"card":{"radius":0.07,"shadow":"0 14px 30px rgba(60,50,30,.18)"},"inspiredBy":{"name":"1960s Braun / Dieter Rams product design (look only)","url":null,"license":null}},{"id":"solari","name":"Solari","group":"Classic","kind":"flip","font":{"family":"Barlow Condensed","weight":700,"tracking":"0","scale":1.05},"colors":{"bg":"#0e0e0e","bg2":"#1a1a1a","cardTop":"#232323","cardBottom":"#1b1b1b","digit":"#f4f1e8","hinge":"#000000","accent":"#f5c518","muted":"#8d8a80","glow":null},"card":{"radius":0.04,"shadow":"0 10px 24px rgba(0,0,0,.7)"},"inspiredBy":{"name":"Split-flap departure boards (look only)","url":null,"license":null}},{"id":"dracula","name":"Dracula","group":"Dev themes","kind":"flip","font":{"family":"Oswald","weight":500,"tracking":"0"},"colors":{"bg":"#21222c","bg2":"#282a36","cardTop":"#383a4a","cardBottom":"#313342","digit":"#f8f8f2","hinge":"#191a21","accent":"#bd93f9","muted":"#6272a4","glow":null,"accent2":"#ff79c6"},"card":{"radius":0.08,"shadow":"0 16px 36px rgba(0,0,0,.45)"},"inspiredBy":{"name":"Dracula Theme","url":"https://draculatheme.com","license":"MIT"}},{"id":"nord","name":"Nord","group":"Dev themes","kind":"flip","font":{"family":"Inter","weight":600,"tracking":"-0.03em"},"colors":{"bg":"#2e3440","bg2":"#3b4252","cardTop":"#434c5e","cardBottom":"#3b4252","digit":"#eceff4","hinge":"#272c36","accent":"#88c0d0","muted":"#7b88a1","glow":null},"card":{"radius":0.1,"shadow":"0 14px 30px rgba(0,0,0,.3)"},"inspiredBy":{"name":"Nord","url":"https://www.nordtheme.com","license":"MIT"}},{"id":"mocha","name":"Catppuccin Mocha","group":"Dev themes","kind":"flip","font":{"family":"Space Mono","weight":700,"tracking":"-0.04em"},"colors":{"bg":"#11111b","bg2":"#1e1e2e","cardTop":"#313244","cardBottom":"#2a2b3c","digit":"#cdd6f4","hinge":"#181825","accent":"#cba6f7","muted":"#7f849c","glow":null,"accent2":"#f5c2e7"},"card":{"radius":0.1,"shadow":"0 16px 36px rgba(0,0,0,.45)"},"inspiredBy":{"name":"Catppuccin","url":"https://catppuccin.com","license":"MIT"}},{"id":"latte","name":"Catppuccin Latte","group":"Dev themes","kind":"flip","font":{"family":"Space Mono","weight":700,"tracking":"-0.04em"},"colors":{"bg":"#dce0e8","bg2":"#eff1f5","cardTop":"#ffffff","cardBottom":"#f2f3f7","digit":"#4c4f69","hinge":"#ccd0da","accent":"#8839ef","muted":"#8c8fa1","glow":null},"card":{"radius":0.1,"shadow":"0 12px 28px rgba(76,79,105,.18)"},"inspiredBy":{"name":"Catppuccin","url":"https://catppuccin.com","license":"MIT"}},{"id":"tokyo","name":"Tokyo Night","group":"Dev themes","kind":"flip","font":{"family":"JetBrains Mono","weight":700,"tracking":"-0.03em"},"colors":{"bg":"#16161e","bg2":"#1a1b26","cardTop":"#292e42","cardBottom":"#232738","digit":"#c0caf5","hinge":"#101014","accent":"#7aa2f7","muted":"#565f89","glow":null,"accent2":"#bb9af7"},"card":{"radius":0.08,"shadow":"0 16px 36px rgba(0,0,0,.5)"},"inspiredBy":{"name":"Tokyo Night","url":"https://github.com/tokyo-night/tokyo-night-vscode-theme","license":"MIT"}},{"id":"gruvbox","name":"Gruvbox","group":"Dev themes","kind":"flip","font":{"family":"Bebas Neue","weight":400,"tracking":"0.01em","scale":1.05},"colors":{"bg":"#1d2021","bg2":"#282828","cardTop":"#3c3836","cardBottom":"#32302f","digit":"#ebdbb2","hinge":"#161819","accent":"#fe8019","muted":"#928374","glow":null,"accent2":"#fabd2f"},"card":{"radius":0.06,"shadow":"0 14px 30px rgba(0,0,0,.5)"},"inspiredBy":{"name":"Gruvbox","url":"https://github.com/morhetz/gruvbox","license":"MIT/X11"}},{"id":"rosepine","name":"Rosé Pine","group":"Dev themes","kind":"flip","font":{"family":"Oswald","weight":500,"tracking":"0"},"colors":{"bg":"#191724","bg2":"#1f1d2e","cardTop":"#2a2740","cardBottom":"#232136","digit":"#e0def4","hinge":"#12101c","accent":"#ebbcba","muted":"#6e6a86","glow":null,"accent2":"#c4a7e7"},"card":{"radius":0.12,"shadow":"0 16px 36px rgba(0,0,0,.45)"},"inspiredBy":{"name":"Rosé Pine","url":"https://rosepinetheme.com","license":"MIT"}},{"id":"glass","name":"Glass","group":"Overlay","kind":"text","font":{"family":"Inter","weight":800,"tracking":"-0.05em"},"colors":{"bg":"rgba(12,14,20,.28)","bg2":null,"cardTop":null,"cardBottom":null,"digit":"#ffffff","hinge":null,"accent":"#9cc4ff","muted":"rgba(255,255,255,.7)","glow":"0 2px 18px rgba(0,0,0,.55)"},"card":{"radius":0.18,"blur":14},"inspiredBy":null},{"id":"shadow","name":"Shadow text","group":"Overlay","kind":"text","font":{"family":"Oswald","weight":700,"tracking":"0"},"colors":{"bg":"transparent","bg2":null,"cardTop":null,"cardBottom":null,"digit":"#ffffff","hinge":null,"accent":"#ffd166","muted":"rgba(255,255,255,.8)","glow":"0 2px 2px rgba(0,0,0,.6), 0 0 22px rgba(0,0,0,.65)"},"card":{"radius":0},"inspiredBy":null},{"id":"terminal","name":"Terminal","group":"Digital","kind":"text","font":{"family":"VT323","weight":400,"tracking":"0.02em"},"colors":{"bg":"#030803","bg2":"#071207","cardTop":null,"cardBottom":null,"digit":"#5dff7a","hinge":null,"accent":"#5dff7a","muted":"#2f8a3e","glow":"0 0 6px rgba(93,255,122,.8), 0 0 26px rgba(93,255,122,.35)","meta":"#3fbf57"},"card":{"radius":0,"scanlines":true},"inspiredBy":null},{"id":"led","name":"LED","group":"Digital","kind":"segment","font":{"family":"DSEG7 Classic","weight":700,"tracking":"0.04em","metaFamily":"Share Tech Mono"},"colors":{"bg":"#070707","bg2":"#111111","cardTop":null,"cardBottom":null,"digit":"#ff453a","hinge":null,"accent":"#ff453a","muted":"rgba(255,69,58,.12)","glow":"0 0 8px rgba(255,69,58,.75), 0 0 28px rgba(255,69,58,.3)","meta":"rgba(255,69,58,.7)"},"card":{"radius":0.06,"ghost":true},"inspiredBy":{"name":"DSEG font by keshikan","url":"https://www.keshikan.net/fonts-e.html","license":"OFL-1.1"}},{"id":"neon","name":"Neon","group":"Digital","kind":"flip","font":{"family":"Orbitron","weight":900,"tracking":"0.02em","scale":0.7,"metaFamily":"Share Tech Mono"},"colors":{"bg":"#0d0221","bg2":"#2a0b45","cardTop":"#1a0b33","cardBottom":"#150828","digit":"#6ef3ff","hinge":"#07010f","accent":"#ff4fd8","muted":"#7a5fa3","glow":"0 0 10px rgba(110,243,255,.8), 0 0 30px rgba(255,79,216,.35)","meta":"#b69be0"},"card":{"radius":0.1,"shadow":"0 0 0 1px rgba(255,79,216,.35), 0 18px 40px rgba(0,0,0,.6)"},"inspiredBy":{"name":"Synthwave / outrun aesthetic (look only)","url":null,"license":null}}];
+  const opts = { hour12: false, seconds: true, date: 'short' };
+  let pomo = false, pomoLeft = 24 * 60 + 59;
+  const clocks = [...document.querySelectorAll('.clock')].map((el) => {
+    const t = THEMES.find((x) => x.id === el.dataset.id);
+    el.style.setProperty('--fc-h', t.group === 'Overlay' ? '92px' : '110px');
+    const c = new FlipClock(el, opts);
+    c.setTheme(t);
+    return c;
+  });
+  const pad = (n) => String(n).padStart(2, '0');
+  function tick() {
+    if (pomo) {
+      pomoLeft = pomoLeft > 0 ? pomoLeft - 1 : 25 * 60;
+      clocks.forEach((c) => c.show({ a: pad(Math.floor(pomoLeft / 60)), b: pad(pomoLeft % 60), c: null,
+        meta: '<span class="fc-accent">Focus</span><span>Round 3 / 4</span>' }));
+    } else clocks.forEach((c) => { Object.assign(c.opts, opts); c.tick(); });
+    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+  }
+  tick();
+  const toggle = (id, fn) => document.getElementById(id).addEventListener('click', (e) => { fn(e.currentTarget); });
+  const press = (el, on) => el.setAttribute('aria-pressed', String(on));
+  toggle('t24', (b) => { opts.hour12 = false; press(b, true); press(document.getElementById('t12'), false); });
+  toggle('t12', (b) => { opts.hour12 = true; press(b, true); press(document.getElementById('t24'), false); });
+  toggle('tsec', (b) => { opts.seconds = !opts.seconds; press(b, opts.seconds); });
+  toggle('tdate', (b) => { opts.date = opts.date === 'off' ? 'short' : 'off'; press(b, opts.date !== 'off'); });
+  toggle('tpomo', (b) => { pomo = !pomo; press(b, pomo); document.querySelectorAll('.dots').forEach((d) => { d.hidden = !pomo; }); });
+  document.querySelectorAll('td button').forEach((b) => b.addEventListener('click', () => {
+    const a = new Audio('../../assets/sounds/' + b.dataset.file); a.volume = Number(b.dataset.gain); a.play();
+  }));
+</script>
+</body>
+</html>
