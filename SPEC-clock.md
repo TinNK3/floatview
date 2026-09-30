@@ -60,22 +60,48 @@ Alex works long hours at the desk. FloatView already keeps a video on top. Now i
 
 ## 4. Pomodoro
 
+### 4.0 Rule for every time setting in this spec
+**Nothing is fixed.** Every duration and count (Pomodoro, move reminder, snooze, idle, repeats) works the same way:
+1. **Follow the default.** Out of the box it uses the default in the tables below. A **"Reset to default"** link sits next to each field.
+2. **Pick a preset.** One click on a chip (e.g. *25/5*, *50/10*, *90/20*) fills all the fields at once.
+3. **Type any value.** Free input in the field; see §4.3 for the accepted formats.
+
+The limits are only there to catch typos: **any value from 10 seconds to 8 hours** is accepted. Values outside that range are rejected with a short message, not silently changed.
+
 ### 4.1 Behavior
 ```
  Focus (25) → Short break (5) → Focus → Short break → Focus → Short break → Focus → Long break (15) → repeat
                                                                          └── "Rounds before long break" = 4
 ```
-| Setting | Range | Default |
+| Setting | Allowed | Default (just a starting point) |
 |---|---|---|
-| Focus length | 5–120 min | 25 |
-| Short break | 1–30 min | 5 |
-| Long break | 5–60 min | 15 |
-| Rounds before long break | 2–8 | 4 |
+| Focus length | any, 10 s – 8 h | 25 min |
+| Short break | any, 10 s – 8 h | 5 min |
+| Long break | any, 10 s – 8 h, or **off** (never a long break) | 15 min |
+| Rounds before long break | any, 1–99 | 4 |
 | Auto-start breaks | on / off | on |
 | Auto-start next focus | on / off | off (you press Start after a break) |
 | Pause video during breaks | on / off | on |
-| Presets | *Classic 25/5*, *Deep work 50/10*, *Short 15/3*, + save your own | Classic |
 
+**Presets** (one click fills focus / short / long / rounds):
+| Preset | Focus | Short | Long | Rounds |
+|---|---|---|---|---|
+| **Default** (Classic) | 25 min | 5 | 15 | 4 |
+| Deep work | 50 min | 10 | 30 | 3 |
+| Quick | 15 min | 3 | 10 | 4 |
+| Ultradian | 90 min | 20 | off | – |
+| **+ Save current as preset…** | your values, your name (e.g. "Coding 40/8") | | | |
+
+- Your own presets can be renamed, edited, deleted, and set as **your default**. Then "Reset to default" goes back to *your* default instead of 25/5.
+- **Change just this round:** while a timer runs, `+1 min` / `+5 min` / `−1 min` buttons adjust the current phase only. The saved settings stay the same.
+
+### 4.3 How you enter a time (all time fields)
+- Type it naturally. All of these are accepted and shown back as `mm:ss` / `h:mm:ss`:
+  `25` (= 25 min) · `25m` · `90s` · `1:30` (= 1 min 30 s) · `1h` · `1h20m` · `1:20:00` · `2.5` (= 2 min 30 s)
+- **▲ / ▼** buttons and the mouse wheel step by 1 min. Hold **Shift** to step by 5 min, or **Alt** to step by 10 s.
+- Invalid text (e.g. `abc`, `0`, `9h`) shows a red hint under the field and keeps the last valid value.
+
+### 4.4 Controls
 - Controls: **Start / Pause / Skip / Reset**, from the clock screen, the tray, and hotkeys.
 - Round dots show progress (● ● ○ ○).
 - A soft sound plays at each phase change (you choose the sound per event, see §6).
@@ -85,27 +111,43 @@ Alex works long hours at the desk. FloatView already keeps a video on top. Now i
 
 This is **separate from Pomodoro**. It watches how long you have been sitting, whether or not a Pomodoro is running.
 
-| Setting | Range | Default |
+Same rule as §4.0: follow the default, pick a preset, or type any value.
+
+| Setting | Allowed | Default (just a starting point) |
 |---|---|---|
-| Remind me every | 15–180 min of sitting | 50 min |
-| Break length (short break) | 1–20 min | 3 min |
-| Active hours | e.g. 08:00–18:00, weekdays only | always |
+| Remind me after sitting | any, 1 min – 8 h | 50 min |
+| Move break length | any, 10 s – 8 h | 3 min |
+| Snooze length | any, 10 s – 2 h | 5 min |
+| Snoozes allowed in a row | 0 (no snooze) – 99, or unlimited | 2 |
+| Away time that counts as a break | any, 10 s – 2 h, or "same as break length" | same as break length |
+| Repeat the sound if I don't react | every any 5 s – 10 min, up to any count, or off | every 30 s, 5 times |
+| Active hours | any days + any time ranges (several allowed, e.g. 09:00–12:00 and 13:00–18:00), or always | always |
 | What to show | random stretch from a built-in list / your own list / just "Stand up" | built-in list |
-| Snooze | 5 / 10 min, max 2 snoozes in a row | 5 min |
 | Strict mode | the break screen can't be closed until the countdown ends (Skip is hidden) | off |
 | Pause video during move break | on / off | on |
 
+**Presets:**
+| Preset | Sit | Move break |
+|---|---|---|
+| **Default** | 50 min | 3 min |
+| Eye rest (20-20-20) | 20 min | 20 s |
+| Pomodoro-style | 25 min | 5 min |
+| Hourly stretch | 60 min | 5 min |
+| **+ Save current as preset…** | your values | |
+
+- Like Pomodoro, your own presets can be saved, named, and set as **your default**.
+
 ### 5.1 How "sitting time" is counted
 - The sitting clock runs while you use the PC.
-- **Idle = away.** If Windows reports no mouse or keyboard input for ≥ the break length (e.g. 3 min), FloatView counts that as a break you already took and **resets the sitting clock**. Coming back from lock or sleep also resets it.
+- **Idle = away.** If Windows reports no mouse or keyboard input for at least the *away time* setting (default: the same as the break length, e.g. 3 min), FloatView counts that as a break you already took and **resets the sitting clock**. Coming back from lock or sleep also resets it.
 - A finished Pomodoro break also resets it. The two timers never nag you twice for the same break.
-- If a Pomodoro break is due within 5 minutes, the move reminder waits and merges into that break.
+- If a Pomodoro break is due within the *merge window* (any value, default 5 min, or off), the move reminder waits and merges into that break.
 
 ### 5.2 What happens when it's time to move
 1. A sound plays (your chosen "Move" sound).
 2. The FloatView window comes forward. If it is hidden or in mini/click-through mode, it opens a **Break screen** in the middle of the screen (about 480×300, always on top).
 3. A Windows notification appears too, in case the window is covered by an exclusive full-screen game.
-4. The Break screen shows: **"Time to stand up 🧍"**, a stretch suggestion (e.g. *"Roll your shoulders 10×"*), and buttons **Start break (3:00)** · **Snooze 5 min** · **Skip**.
+4. The Break screen shows: **"Time to stand up 🧍"**, a stretch suggestion (e.g. *"Roll your shoulders 10×"*), and buttons **Start break (3:00)** · **Snooze 5 min** · **Skip**. The numbers on the buttons follow your settings, and **−/+** next to the countdown lets you change *this* break only.
 5. During the break: a big countdown, and the video is paused. At the end, a "Back to work" sound plays, the window returns to where it was, and the video resumes if it was playing.
 
 ### 5.3 Built-in stretch list (editable)
@@ -167,10 +209,14 @@ src/renderer/sounds.js      Web Audio synth presets + custom file playback + duc
     "clock":    { "style": "flip", "hour12": false, "seconds": false, "date": "off", "theme": "dark",
                   "font": "jetbrains-mono", "overlay": { "size": "M", "anchor": "top-right", "opacity": 0.85,
                   "hideOnHover": false, "showTimer": "pomodoro" }, "animate": true, "tick": "off" },
-    "pomodoro": { "focus": 25, "short": 5, "long": 15, "rounds": 4, "autoBreak": true, "autoFocus": false,
-                  "pauseVideo": true, "preset": "classic", "custom": [] },
-    "move":     { "enabled": true, "every": 50, "breakMin": 3, "activeHours": null, "snoozeMin": 5,
-                  "maxSnoozes": 2, "strict": false, "pauseVideo": true, "tips": "builtin", "customTips": [] },
+    // all durations stored in SECONDS, so any value (e.g. 90 s) is exact
+    "pomodoro": { "focusSec": 1500, "shortSec": 300, "longSec": 900, "rounds": 4, "autoBreak": true, "autoFocus": false,
+                  "pauseVideo": true, "preset": "default", "userDefault": null,
+                  "presets": [ { "id": "…", "name": "Coding 40/8", "focusSec": 2400, "shortSec": 480, "longSec": 1200, "rounds": 3 } ] },
+    "move":     { "enabled": true, "sitSec": 3000, "breakSec": 180, "snoozeSec": 300, "maxSnoozes": 2,
+                  "awaySec": null, "mergeSec": 300, "repeat": { "everySec": 30, "times": 5 },
+                  "activeHours": null, "strict": false, "pauseVideo": true, "tips": "builtin", "customTips": [],
+                  "preset": "default", "userDefault": null, "presets": [] },
     "sounds":   { "master": 0.8, "duck": true, "repeatMove": true,
                   "events": { "focusStart": "chime", "focusEnd": "bell", "breakStart": "marimba",
                               "breakEnd": "rising", "move": "bell", "tick": null },
@@ -199,6 +245,9 @@ src/renderer/sounds.js      Web Audio synth presets + custom file playback + duc
 | C10 | Custom sound file | Copied into app data; plays after the original is deleted |
 | C11 | PC sleeps mid-focus | On resume the timer is correct and the sitting clock resets |
 | C12 | Unit: timer state machine | All transitions covered with a fake clock (focus/break/long/skip/pause/reset/idle/merge) |
+| C13 | Unit: time input parser | `25`, `25m`, `90s`, `1:30`, `1h20m`, `1:20:00`, `2.5` parse right; `abc`, `0`, `9h` rejected |
+| C14 | Custom values end to end | Focus 7 s / break 4 s / rounds 1 / long off, and move sit 5 s / break 3 s run exactly as typed |
+| C15 | Save preset + set as my default | Survives restart; "Reset to default" returns to *my* default |
 
 ## 11. Risks
 
@@ -223,7 +272,7 @@ src/renderer/sounds.js      Web Audio synth presets + custom file playback + duc
 
 ## 13. Open questions (answers change the build)
 
-1. **Defaults:** is **50 min sitting → 3 min move break** right for you, or something else (e.g. 45/5)?
+1. ~~Defaults~~: **decided 2026-09-29.** All times are user-set (default, preset, or any value; §4.0). The shipped defaults stay 25/5/15×4 and 50→3.
 2. **Strict mode:** off by default. Do you want it on?
 3. **Break screen:** a small card in the middle of the screen (default), or **dim the whole screen** behind it so it's impossible to ignore?
 4. **Active hours:** should reminders stop outside work hours? Your hours are 2–11 PM PT, so maybe 14:00–23:00?
