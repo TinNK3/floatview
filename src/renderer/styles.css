@@ -176,3 +176,39 @@ body.handle-hot #lock-handle { background: var(--accent); color: var(--accent-in
 .btn-row .danger { color: var(--danger); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation-duration: 0s !important; } }
+
+/* ---- Up next (queue) ---- */
+.q-nav { display: none; }
+body.has-queue .q-nav { display: grid; }
+#btn-queue { position: relative; }
+#btn-queue[data-count]:not([data-count=""])::after { content: attr(data-count); position: absolute; top: 1px; right: 0; min-width: 14px; height: 14px;
+  padding: 0 3px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); font: 700 9px/14px "Segoe UI", sans-serif; text-align: center; }
+#btn-next[data-yt]:not([data-yt=""])::after { content: attr(data-yt); position: absolute; margin-top: 30px; font-size: 9px; color: rgba(255,255,255,.7); }
+#btn-enqueue { height: 38px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .06); cursor: pointer; white-space: nowrap; }
+#btn-enqueue:hover { background: rgba(255, 255, 255, .12); }
+@media (max-width: 560px) { #btn-enqueue .wide { display: none; } #btn-enqueue { padding: 0 13px; font-size: 16px; } }
+@media (max-width: 300px) { #btn-enqueue { display: none; } }
+
+#queue-panel { position: fixed; top: 36px; right: 8px; bottom: 8px; z-index: 36; width: min(330px, calc(100% - 16px));
+  display: flex; flex-direction: column; border-radius: 12px; background: var(--panel); border: 1px solid var(--line);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .5); backdrop-filter: blur(10px); overflow: hidden; }
+.q-head { display: flex; align-items: center; gap: 8px; padding: 6px 4px 6px 12px; border-bottom: 1px solid var(--line); }
+.q-head strong { font-size: 13px; }
+#q-count { color: var(--muted); font-size: 12px; flex: 1; }
+.q-tools { display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.q-tools button { height: 26px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05);
+  font-size: 11.5px; cursor: pointer; }
+.q-tools button.on { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); color: #cfe0ff; }
+#q-list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; min-height: 0; }
+#q-list li { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: 8px; cursor: pointer; font-size: 12.5px; }
+#q-list li:hover { background: rgba(255,255,255,.06); }
+#q-list li.now { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+#q-list .n { width: 22px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+#q-list li.now .n { color: var(--accent); }
+#q-list .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#q-list .x { width: 22px; height: 22px; border: 0; border-radius: 6px; background: none; color: var(--muted); cursor: pointer; flex: none; opacity: 0; }
+#q-list li:hover .x { opacity: 1; }
+#q-list .x:hover { background: rgba(255, 107, 107, .2); color: #fff; }
+.q-hint { margin: 0; padding: 8px 12px 10px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); }
+@media (max-height: 260px) { .q-hint { display: none; } }

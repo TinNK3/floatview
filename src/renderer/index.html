@@ -51,10 +51,11 @@
         <input id="link-input" type="text" spellcheck="false"
                placeholder="Paste a video link — YouTube, Vimeo, Twitch, .mp4, .m3u8…" aria-label="Video link">
         <button type="submit" class="primary">Play</button>
+        <button type="button" id="btn-enqueue" title="Add to Up next (Shift+Enter)">+<span class="wide"> Queue</span></button>
       </form>
       <ul id="recent" aria-label="Recent links"></ul>
       <p class="hint">Tip: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> opens this from anywhere · drop a link or file here</p>
-      <div class="empty-actions"><button id="empty-clock" type="button">⏱ Clock &amp; Pomodoro</button><button id="empty-settings" type="button">Settings</button></div>
+      <div class="empty-actions"><button id="empty-queue" type="button" hidden>▶ Up next</button><button id="empty-clock" type="button">⏱ Clock &amp; Pomodoro</button><button id="empty-settings" type="button">Settings</button></div>
     </div>
   </section>
 
@@ -63,6 +64,7 @@
     <span id="title">FloatView</span>
     <div class="buttons">
       <button class="icon" id="btn-view" title="View: Video → Video + Clock → Clock (Ctrl+Alt+C)"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></button>
+      <button class="icon" id="btn-queue" title="Up next (playlist)" aria-expanded="false" aria-controls="queue-panel"><svg viewBox="0 0 24 24"><path d="M4 6h12M4 12h12M4 18h8"/><path d="M17 15l4 3-4 3z" class="fill"/></svg></button>
       <button class="icon" id="btn-new" title="Open new link (N)"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
       <button class="icon" id="btn-clickthrough" title="Click-through (Ctrl+Alt+T)"><svg viewBox="0 0 24 24"><path d="M5 3l6 16 2.2-6.8L20 10z"/><path d="M13.2 12.2L19 18"/></svg></button>
       <button class="icon" id="btn-pin" title="Always on top (Ctrl+Alt+P)"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8"/></svg></button>
@@ -77,10 +79,12 @@
   <footer id="controls" class="overlay">
     <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
     <div class="row">
+      <button class="icon q-nav" id="btn-prev" title="Previous (Shift+P)"><svg viewBox="0 0 24 24"><path d="M6 5v14" /><path d="M19 5L9 12l10 7z" class="fill"/></svg></button>
       <button class="icon" id="btn-play" title="Play / pause (Space)">
         <svg viewBox="0 0 24 24" class="i-play"><path d="M7 4.5v15l13-7.5z" class="fill"/></svg>
         <svg viewBox="0 0 24 24" class="i-pause"><path d="M7 4h4v16H7zM13 4h4v16h-4z" class="fill"/></svg>
       </button>
+      <button class="icon q-nav" id="btn-next" title="Next (Shift+N)"><svg viewBox="0 0 24 24"><path d="M18 5v14" /><path d="M5 5l10 7-10 7z" class="fill"/></svg></button>
       <button class="icon" id="btn-mute" title="Mute (M)">
         <svg viewBox="0 0 24 24" class="i-vol"><path d="M4 9h4l5-4v14l-5-4H4z" class="fill"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>
         <svg viewBox="0 0 24 24" class="i-muted"><path d="M4 9h4l5-4v14l-5-4H4z" class="fill"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
@@ -99,6 +103,23 @@
       </select>
     </div>
   </footer>
+
+  <!-- Up next (queue) -->
+  <aside id="queue-panel" hidden aria-label="Up next">
+    <div class="q-head">
+      <strong>Up next</strong><span id="q-count"></span>
+      <button class="icon ghost" id="q-close" title="Close (Esc)"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="q-tools">
+      <button id="q-auto" title="Play the next video when one ends">Autoplay</button>
+      <button id="q-repeat" title="Repeat: off → all → one">Repeat: off</button>
+      <button id="q-shuffle" title="Shuffle">Shuffle</button>
+      <button id="q-clear" title="Remove everything">Clear</button>
+    </div>
+    <ol id="q-list"></ol>
+    <p class="q-hint">Paste several links (one per line), use <b>+ Queue</b>, or drop files / a folder.
+      YouTube playlist and Vimeo showcase links play as a whole list.</p>
+  </aside>
 
   <!-- Size panel -->
   <div id="size-menu" hidden role="dialog" aria-label="Window size">
@@ -201,6 +222,7 @@
   <script src="renderer.js"></script>
   <script src="../shared/duration.js"></script>
   <script src="clock/flip-clock.js"></script>
+  <script src="queue.js"></script>
   <script src="clock-ui.js"></script>
 </body>
 </html>

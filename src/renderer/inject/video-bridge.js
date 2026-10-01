@@ -57,7 +57,37 @@
     }
   }
 
+  // YouTube's own playlist player (embed/videoseries or watch?v=…&list=…).
+  function ytPlaylist() {
+    try {
+      const p = document.getElementById('movie_player');
+      if (!p || typeof p.getPlaylist !== 'function') return null;
+      const list = p.getPlaylist() || [];
+      return list.length ? { p, index: p.getPlaylistIndex(), count: list.length } : null;
+    } catch { return null; } // player not ready yet
+  }
+
+  // YouTube shows its own error ("Video unavailable", private, embedding off, bot check)
+  // while the <video> just sits there: report it so FloatView can say so / skip it.
+  function ytError() {
+    if (!/(^|\.)youtube(-nocookie)?\.com$/.test(location.hostname)) return null;
+    const el = document.querySelector('.ytp-error, .ytp-error-content, .player-unavailable');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    if (r.width < 5 || r.height < 5 || cs.display === 'none' || cs.visibility === 'hidden') return null;
+    return (el.innerText || 'This video is unavailable').trim().split('\n')[0].slice(0, 160);
+  }
+
   function cmd(name, arg) {
+    if (name === 'next' || name === 'prev') {
+      const yt = ytPlaylist();
+      if (!yt) return false;
+      if (name === 'next' && yt.index >= yt.count - 1) return 'end'; // last video: FloatView's queue takes over
+      if (name === 'prev' && yt.index <= 0) return false;
+      name === 'next' ? yt.p.nextVideo() : yt.p.previousVideo();
+      return 'yt';
+    }
     const v = video();
     if (!v) return false;
     switch (name) {
@@ -73,7 +103,24 @@
     return true;
   }
 
+  // YouTube embeds: FloatView draws the controls, so hide YouTube's own overlay
+  // (title bar, big play/prev/next, "More videos", watermark) — two sets of controls overlap.
+  function hideYouTubeChrome() {
+    if (!/(^|\.)youtube(-nocookie)?\.com$/.test(location.hostname) || document.getElementById('__fv-yt')) return;
+    const s = document.createElement('style');
+    s.id = '__fv-yt';
+    // 2026 player: the whole overlay (title, big buttons, "More videos", bottom bar) lives in #player-controls
+    // and #bottom-sheet-wrapper, next to the player. Older player: the .ytp-* chrome inside it.
+    s.textContent = '#player-controls, #bottom-sheet-wrapper, #movie_player > .ytp-unmute,'
+      + ' .ytp-chrome-top, .ytp-chrome-bottom, .ytp-pause-overlay, .ytp-large-play-button, .ytp-watermark,'
+      + ' .ytp-gradient-top, .ytp-gradient-bottom { display: none !important; }';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
   function status() {
+    hideYouTubeChrome();
+    const yterr = ytError();
+    if (yterr) return { found: true, error: yterr, title: document.title, paused: true, ended: false, currentTime: 0, duration: 0 };
     if (window.__fvVideoOnly) videoOnly();
     const v = video();
     if (!v) {
@@ -95,6 +142,7 @@
       w: v.videoWidth,
       h: v.videoHeight,
       title: document.title,
+      yt: (() => { const y = ytPlaylist(); return y ? { index: y.index, count: y.count, title: y.p.getVideoData?.().title || '' } : null; })(),
     };
   }
 

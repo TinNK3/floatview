@@ -92,6 +92,7 @@ function onTitle(title) {
   const clean = title.replace(/\s+-\s+YouTube$/, '').trim();
   if (!clean || /^(youtube|vimeo|twitch)$/i.test(clean) || clean === 'about:blank') return;
   setTitle(clean);
+  window.FVQueue?.onTitle(clean);
   if (!session.titled) {
     session.titled = true;
     api.updateHistory(session.source.original, { title: clean });
@@ -122,6 +123,15 @@ async function poll() {
     }
     if (session.source.kind === 'web' && waited > WEB_NO_VIDEO_MS && ui.error.hidden) {
       showError("Couldn't find a video on this page. Try opening it in your browser, or set up yt-dlp in Settings.", session.source.original);
+    }
+    return;
+  }
+
+  // The page itself reports an error (e.g. YouTube "Video unavailable")
+  if (s.error) {
+    if (ui.error.hidden && !session.pageErrorShown) {
+      session.pageErrorShown = true;
+      showError(`YouTube: ${s.error}`, session.source.original);
     }
     return;
   }
@@ -175,6 +185,7 @@ async function poll() {
   }
 
   session.last = s;
+  window.FVQueue?.onStatus(s); // end of video -> next in Up next
   if (Date.now() - session.lastSave > SAVE_EVERY_MS) savePosition();
 }
 
@@ -242,7 +253,12 @@ function setActive(on) { body.classList.toggle('active', on || body.classList.co
 
 // ------------------------------------------------------------------ controls
 
-ui.linkForm.addEventListener('submit', (e) => { e.preventDefault(); openLink(ui.linkInput.value); });
+ui.linkForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = ui.linkInput.value;
+  ui.linkInput.value = '';
+  window.FVQueue ? window.FVQueue.submit(text) : openLink(text);
+});
 $('empty-close').addEventListener('click', () => body.classList.remove('show-link'));
 
 $('btn-new').addEventListener('click', showLinkSheet);
@@ -300,13 +316,14 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('paste', (e) => {
   if (e.target.matches('input[type=text], input[type=number]')) return;
   const text = e.clipboardData?.getData('text/plain');
-  if (text) { e.preventDefault(); openLink(text); }
+  if (text) { e.preventDefault(); window.FVQueue ? window.FVQueue.submit(text) : openLink(text); }
 });
 
 // Drag & drop a link or a local file.
 document.addEventListener('dragover', (e) => e.preventDefault());
 document.addEventListener('drop', (e) => {
   e.preventDefault();
+  if (window.FVQueue) return window.FVQueue.dropped(e); // several files / a folder -> Up next
   const file = e.dataTransfer.files?.[0];
   if (file) return openLink(api.pathForFile(file));
   const text = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
@@ -398,7 +415,10 @@ function renderRecent() {
     p.className = 'p';
     p.textContent = [h.provider, h.lastPosition > 5 ? `▶ ${fmt(h.lastPosition)}` : ''].filter(Boolean).join(' · ');
     li.append(t, p);
-    li.addEventListener('click', () => openLink(h.url, { fromHistory: true, startAt: h.lastPosition > 5 ? h.lastPosition : 0 }));
+    li.addEventListener('click', () => {
+      const opts = { fromHistory: true, startAt: h.lastPosition > 5 ? h.lastPosition : 0 };
+      window.FVQueue ? window.FVQueue.playNow(h.url, opts) : openLink(h.url, opts);
+    });
     return li;
   }));
 }
@@ -452,6 +472,7 @@ function showError(msg, url) {
   ui.loading.hidden = true;
   if (session?.wasPlaying) { session.wasPlaying = false; api.window('playing', false); } // let the screen sleep again
   ui.errorText.textContent = msg;
+  window.FVQueue?.onError(); // in a playlist: skip to the next video
   ui.error.dataset.url = /^https?:/.test(url || '') ? url : '';
   $('error-browser').hidden = !ui.error.dataset.url;
   ui.error.hidden = false;

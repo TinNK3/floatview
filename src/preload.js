@@ -37,4 +37,9 @@ contextBridge.exposeInMainWorld('floatview', {
   onTimerVideo: on('timer-video'),
   onPlaySound: on('play-sound'),
   onSettings: on('settings'),
+  // "Up next" queue
+  getQueue: () => ipcRenderer.invoke('get-queue'),
+  setQueue: (q) => ipcRenderer.invoke('set-queue', q),
+  expandPaths: (paths) => ipcRenderer.invoke('expand-paths', paths),
+  expandPlaylist: (url) => ipcRenderer.invoke('expand-playlist', url),
 });

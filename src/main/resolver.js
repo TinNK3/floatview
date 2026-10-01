@@ -43,15 +43,18 @@ const youtube = {
     return m ? m[1] : null;
   },
   resolve(u, { startAt = 0 } = {}) {
-    const id = this.id(u);
+    const list = /^[\w-]{10,64}$/.test(u.searchParams.get('list') || '') ? u.searchParams.get('list') : null;
+    const id = this.id(u) || (list ? 'videoseries' : null); // playlist page -> the embed playlist player
     if (!id) return null; // channel page, search page... -> fall through to web mode
     const t = startAt || parseTime(u.searchParams.get('t') || u.searchParams.get('start'));
     // controls=0: FloatView draws its own controls; two control bars would overlap.
     const q = new URLSearchParams({ autoplay: '1', playsinline: '1', rel: '0', modestbranding: '1', controls: '0', iv_load_policy: '3' });
     if (t) q.set('start', String(Math.floor(t)));
-    const list = u.searchParams.get('list');
     if (list) q.set('list', list);
-    return { kind: 'embed', provider: 'youtube', url: `https://www.youtube-nocookie.com/embed/${id}?${q}` };
+    // index=N in a watch?v=…&list=… link starts the list at that video (YouTube counts from 1 there)
+    const index = Number(u.searchParams.get('index'));
+    if (list && Number.isInteger(index) && index > 1) q.set('index', String(index - 1));
+    return { kind: 'embed', provider: 'youtube', url: `https://www.youtube-nocookie.com/embed/${id}?${q}`, ...(list ? { playlist: 'youtube' } : {}) };
   },
 };
 
@@ -59,6 +62,9 @@ const vimeo = {
   name: 'vimeo',
   match: (u) => /(^|\.)vimeo\.com$/.test(u.hostname),
   resolve(u) {
+    // Showcase / album: Vimeo's own playlist player moves to the next video by itself.
+    const sc = u.pathname.match(/^\/(?:showcase|album)\/(\d+)/);
+    if (sc) return { kind: 'embed', provider: 'vimeo', playlist: 'vimeo', url: `https://vimeo.com/showcase/${sc[1]}/embed` };
     const m = u.pathname.match(/(?:^|\/)(\d{5,})(?:\/([0-9a-f]{6,}))?/);
     if (!m) return null;
     const q = new URLSearchParams({ autoplay: '1', controls: '0', title: '0', byline: '0', portrait: '0' });

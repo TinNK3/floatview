@@ -7,6 +7,7 @@ const path = require('node:path');
 const { Store } = require('./store');
 const { resolve } = require('./resolver');
 const { setupClock } = require('./clock-main');
+const queueStore = require('./queue-store');
 
 // Autoplay with sound without a click inside the page (we are a video player).
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -471,6 +472,8 @@ function refreshTray() {
     { type: 'separator' },
     { label: 'Always on top', type: 'checkbox', checked: state.pinned, click: (i) => setPinned(i.checked) },
     { label: 'Click-through', type: 'checkbox', checked: state.clickThrough, click: (i) => setClickThrough(i.checked) },
+    { label: 'Next video', click: () => send('command', 'next') },
+    { label: 'Previous video', click: () => send('command', 'prev') },
     { label: 'Mini size', type: 'checkbox', checked: state.mini, click: toggleMini },
     { label: 'Size', submenu: [
       { label: 'Small', click: () => resizePreset('small') },
@@ -510,6 +513,8 @@ const HOTKEY_ACTIONS = {
   pomoToggle: () => { clock?.act('pomo-toggle'); refreshTray(); },
   moveBreakNow: () => { clock?.act('move-break'); refreshTray(); },
   moveSnooze: () => { clock?.act('move-snooze'); refreshTray(); },
+  nextVideo: () => send('command', 'next'),
+  prevVideo: () => send('command', 'prev'),
 };
 
 function registerHotkeys() {
@@ -630,6 +635,22 @@ ipcMain.on('window', (_e, action, arg) => {
       if (!arg && psbId !== null) { powerSaveBlocker.stop(psbId); psbId = null; }
       break;
   }
+});
+
+// ---- "Up next" queue
+ipcMain.handle('get-queue', () => queueStore.sanitizeQueue(store.get('queue'), queueStore.DEFAULT_QUEUE));
+ipcMain.handle('set-queue', (_e, q) => {
+  const next = queueStore.sanitizeQueue(q, store.get('queue'));
+  store.set('queue', next);
+  return next;
+});
+// Dropped files/folders -> playable files (folders in name order).
+ipcMain.handle('expand-paths', (_e, paths) => queueStore.expandPaths(paths));
+// A site's playlist/album via yt-dlp (only when the user set it up).
+ipcMain.handle('expand-playlist', async (_e, url) => {
+  const exe = store.get('settings').ytDlpPath;
+  if (!exe || typeof url !== 'string' || !/^https?:\/\//.test(url) || !queueStore.looksLikePlaylist(url)) return [];
+  return queueStore.ytDlpPlaylist(exe, url);
 });
 
 ipcMain.handle('open-external', (_e, url) => {

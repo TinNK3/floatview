@@ -133,10 +133,12 @@ async function open(page, link) {
   await sleep(400);
   let g1 = await geo();
   ok('bigger step grows ~15%', near(g1.b.width, Math.round(g0.b.width * 1.15), 3), `${g0.b.width} -> ${g1.b.width}`);
+  // the window keeps the shape of the video that is playing (a stream may be 16:9 or e.g. 320×184)
+  const ratio = await app.evaluate(() => { const st = global.__floatview.state; return st.aspect || (global.__floatview.win.getBounds().width / global.__floatview.win.getBounds().height); });
   await page.evaluate(() => window.floatview.window('size-width', 640));
   await sleep(400);
   g1 = await geo();
-  ok('custom width 640', g1.b.width === 640 && near(g1.b.height, 360, 2) && inside(g1), `${g1.b.width}×${g1.b.height}`);
+  ok('custom width 640', g1.b.width === 640 && near(g1.b.height, Math.round(640 / ratio), 2) && inside(g1), `${g1.b.width}×${g1.b.height} (shape ${ratio.toFixed(3)})`);
   await page.evaluate(() => window.floatview.window('size-width', 50));
   await sleep(400);
   g1 = await geo();

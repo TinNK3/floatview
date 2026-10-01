@@ -2,9 +2,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const clock = require('./clock-settings');
+const { DEFAULT_QUEUE } = require('./queue-store');
 
 const DEFAULTS = {
   hideTipShown: false,
+  queue: DEFAULT_QUEUE, // "Up next": { items: [{ url, title }], index, repeat, shuffle, autoNext }
   stats: {},   // { 'YYYY-MM-DD': { focusSessions, focusSec, moveTaken, moveSnoozed, moveSkipped, longestSitSec } }
   windowByMode: {}, // { clock: { x, y, w, h } } — Video / Video+Clock use `window`
   settings: {
@@ -32,6 +34,8 @@ const DEFAULTS = {
       pomoToggle: 'Ctrl+Alt+S',
       moveBreakNow: 'Ctrl+Alt+B',
       moveSnooze: 'Ctrl+Alt+N',
+      nextVideo: 'Ctrl+Alt+PageDown',
+      prevVideo: 'Ctrl+Alt+PageUp',
     },
   },
   window: null, // { x, y, w, h, displayId, aspect }
