@@ -8,6 +8,7 @@ const { Store } = require('./store');
 const { resolve } = require('./resolver');
 const { setupClock } = require('./clock-main');
 const queueStore = require('./queue-store');
+const youtube = require('./youtube');
 
 // Autoplay with sound without a click inside the page (we are a video player).
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -429,6 +430,14 @@ function hardenSessions() {
     const s = session.fromPartition(name);
     s.setPermissionRequestHandler((_wc, permission, cb) => cb(permission === 'fullscreen'));
     s.setUserAgent(app.userAgentFallback);
+    // Block ads (Settings → General, on by default): ad servers and YouTube's ad / ad-tracking calls.
+    // Web pages: leave Google's IMA player SDK alone (some players hang without it).
+    const patterns = name === 'persist:fallback' ? youtube.AD_PATTERNS.filter((p) => !p.includes('imasdk')) : youtube.AD_PATTERNS;
+    s.webRequest.onBeforeRequest({ urls: patterns }, (_details, cb) => {
+      const block = store.get('settings').blockAds !== false;
+      if (block) state.adsBlocked = (state.adsBlocked || 0) + 1;
+      cb({ cancel: block });
+    });
   }
 
   // YouTube's embed player refuses to start without a Referer (error 153).
@@ -592,6 +601,7 @@ function publicState() {
   return {
     pinned: state.pinned, clickThrough: state.clickThrough, hidden: state.hidden,
     mini: state.mini, opacity: state.opacity, hotkeyErrors: state.hotkeyErrors || [], viewMode: viewMode(),
+    adsBlocked: state.adsBlocked || 0,
     size: win && !win.isDestroyed() ? win.getSize() : null,
   };
 }
@@ -638,6 +648,7 @@ const SETTING_RULES = {
   defaultCorner: (v) => ['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(v),
   launchAtLogin: (v) => typeof v === 'boolean',
   ytDlpPath: (v) => v === null || (typeof v === 'string' && /\.exe$/i.test(v) && path.isAbsolute(v)),
+  blockAds: (v) => typeof v === 'boolean',
 };
 
 ipcMain.handle('set-setting', (_e, key, value) => {
@@ -701,6 +712,20 @@ ipcMain.handle('set-queue', (_e, q) => {
 // Dropped files/folders -> playable files (folders in name order).
 ipcMain.handle('expand-paths', (_e, paths) => queueStore.expandPaths(paths));
 // A site's playlist/album via yt-dlp (only when the user set it up).
+// YouTube's suggested videos for the video that is playing ("More from YouTube").
+ipcMain.handle('youtube-suggestions', async (_e, input) => {
+  const id = youtube.videoIdFrom(input);
+  if (!id) return [];
+  try {
+    const res = await session.fromPartition('persist:embed').fetch(`https://www.youtube.com/watch?v=${id}`, {
+      headers: { 'Accept-Language': 'en,vi;q=0.8', Cookie: 'SOCS=CAI' }, signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    return youtube.suggestions(youtube.initialData(html), { exclude: id, limit: 30 });
+  } catch { return []; }
+});
+
 ipcMain.handle('expand-playlist', async (_e, url) => {
   const exe = store.get('settings').ytDlpPath;
   if (!exe || typeof url !== 'string' || !/^https?:\/\//.test(url) || !queueStore.looksLikePlaylist(url)) return [];

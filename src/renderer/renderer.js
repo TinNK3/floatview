@@ -65,7 +65,7 @@ async function openLink(input, opts = {}) {
 
   const resumeAt = opts.fromHistory && source.lastPosition > 5 ? source.lastPosition : 0;
   session = { source, startedAt: Date.now(), resumeAt, resumed: false, lastSave: 0, aspect: null, titled: !!source.title, wasPlaying: null };
-  const hooks = { onError: (msg) => showError(msg, source.original), onTitle, injectScript };
+  const hooks = { onError: (msg) => showError(msg, source.original), onTitle, injectScript, blockAds: app.settings.blockAds !== false };
   player = source.kind === 'native'
     ? new NativePlayer(ui.native, source, hooks)
     : new WebviewPlayer(ui.stage, source, hooks);
@@ -437,6 +437,8 @@ function fillSettings() {
   $('s-aspect').value = s.aspect || 'auto';
   $('s-corner').value = s.defaultCorner;
   $('s-login').checked = !!s.launchAtLogin;
+  $('s-ads').checked = s.blockAds !== false;
+  api.getState().then((st) => { $('s-ads-count').textContent = st.adsBlocked ? `· ${st.adsBlocked} blocked so far` : ''; });
   $('s-ytdlp').value = s.ytDlpPath || '';
 }
 
@@ -454,6 +456,7 @@ $('s-aspect').addEventListener('change', async (e) => {
 });
 $('s-corner').addEventListener('change', (e) => setSetting('defaultCorner', e.target.value));
 $('s-login').addEventListener('change', (e) => setSetting('launchAtLogin', e.target.checked));
+$('s-ads').addEventListener('change', (e) => { setSetting('blockAds', e.target.checked); toast(e.target.checked ? 'Ads blocked — applies to the next video' : 'Ads allowed — applies to the next video'); });
 $('s-ytdlp').addEventListener('change', (e) => setSetting('ytDlpPath', e.target.value.trim() || null));
 $('s-ytdlp-browse').addEventListener('click', async () => {
   const p = await api.pickYtDlp();

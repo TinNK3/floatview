@@ -191,6 +191,8 @@
       if (ui.title.textContent !== label) setTitle(label);
     }
     refreshNav(s);
+    // An ad being skipped ends too — that is not the end of the real video.
+    if (s.ad) { session.endedAt = 0; if (s.adSkipped && !session.adToast) { session.adToast = true; toast('Ad skipped', 1200); } return; }
     if (!s.ended || s.duration === null) { session.endedAt = 0; return; }
     if (!session.endedAt) session.endedAt = Date.now();
     if (session.advanced || !q.autoNext) return;
@@ -201,9 +203,54 @@
     if (Date.now() - session.endedAt < wait) return;
     session.advanced = true;
     if (ytMore) { player.cmd('next'); session.advanced = false; session.endedAt = 0; return; }
+    if (queueNext({ auto: true })) return;
+    // End of the list on a YouTube video: like YouTube's autoplay, keep going with its suggestions.
+    if (q.suggest && currentYouTubeId() && !session.suggestTried) {
+      session.suggestTried = true;
+      const sess = session;
+      addSuggestions({ play: true, onlyIf: sess }).then((n) => { if (!n && session === sess) session.advanced = false; });
+      return;
+    }
     // Nothing to play next (end of list, repeat off): keep checking, so turning on
     // Repeat or adding a video afterwards continues right away.
-    if (!queueNext({ auto: true })) session.advanced = false;
+    session.advanced = false;
+  }
+
+  // ------------------------------------------------------------------ YouTube suggestions
+
+  function currentYouTubeId() {
+    if (!session) return null;
+    const live = session.last?.ytId;
+    if (live) return live;
+    const m = String(session.source.url || '').match(/youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})(?:[?/]|$)/);
+    return m && m[1] !== 'videoseries' ? m[1] : null; // "videoseries" is the playlist embed, not a video
+  }
+
+  // Add YouTube's suggestions for the video that is playing; play the first new one if asked.
+  async function addSuggestions({ play = false, onlyIf = null } = {}) {
+    const id = currentYouTubeId();
+    if (!id) { toast('Suggestions work while a YouTube video is playing'); return 0; }
+    const btn = $('q-add-suggest');
+    btn.disabled = true;
+    toast('Loading suggestions from YouTube…', 1500);
+    const items = await api.youtubeSuggestions(id).catch(() => []);
+    btn.disabled = false;
+    if (!items.length) { toast('YouTube sent no suggestions this time'); return 0; }
+    // Full list (500): make room by dropping videos already watched (before the current one).
+    const fresh = items.filter((it) => !q.items.some((x) => sameUrl(x.url, it.url)));
+    const overflow = q.items.length + fresh.length - MAX_ITEMS;
+    if (overflow > 0 && q.index > 0) {
+      const drop = Math.min(overflow, q.index);
+      q.items.splice(0, drop);
+      q.index -= drop;
+      played = new Set([...played].filter((k) => k >= drop).map((k) => k - drop));
+    }
+    const before = q.items.length;
+    enqueue(items, { playIfIdle: false });
+    const added = q.items.length - before;
+    // Only start it if the user hasn't picked something else while YouTube was answering.
+    if (play && added && (!onlyIf || session === onlyIf)) playIndex(before);
+    return added;
   }
 
   // A video in the list can't play (deleted, private, blocked, broken file): don't stop the
@@ -246,6 +293,7 @@
   function render() {
     $('q-count').textContent = q.items.length ? `${q.index + 1 > 0 ? q.index + 1 + ' / ' : ''}${q.items.length}` : 'empty';
     $('q-auto').classList.toggle('on', q.autoNext);
+    $('q-suggest').classList.toggle('on', q.suggest !== false);
     $('q-shuffle').classList.toggle('on', q.shuffle);
     $('q-repeat').classList.toggle('on', q.repeat !== 'off');
     $('q-repeat').textContent = `Repeat: ${q.repeat}`;
@@ -282,6 +330,8 @@
   $('q-auto').addEventListener('click', () => { q.autoNext = !q.autoNext; save(); render(); });
   $('q-shuffle').addEventListener('click', () => { q.shuffle = !q.shuffle; played = new Set(q.index >= 0 ? [q.index] : []); save(); render(); });
   $('q-repeat').addEventListener('click', () => { q.repeat = { off: 'all', all: 'one', one: 'off' }[q.repeat]; save(); render(); });
+  $('q-suggest').addEventListener('click', () => { q.suggest = q.suggest === false; save(); render(); toast(q.suggest ? 'When the list ends, YouTube suggestions keep playing' : 'Stops at the end of the list'); });
+  $('q-add-suggest').addEventListener('click', () => addSuggestions());
   $('q-clear').addEventListener('click', () => { q.items = []; q.index = -1; played = new Set(); save(); render(); toast('Up next cleared'); });
   $('btn-next').addEventListener('click', next);
   $('btn-prev').addEventListener('click', prev);
@@ -309,5 +359,5 @@
   api.onCommand((c) => { if (c === 'next') next(); if (c === 'prev') prev(); });
 
   render();
-  window.FVQueue = { submit, dropped, playNow, onStatus, onTitle, onError, next, prev, openPanel, get state() { return q; } };
+  window.FVQueue = { submit, dropped, playNow, onStatus, onTitle, onError, next, prev, openPanel, addSuggestions, get state() { return q; } };
 })();

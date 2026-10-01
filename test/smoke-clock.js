@@ -98,7 +98,8 @@ async function waitFor(fn, ms = 20000, step = 250) {
   // ---- C3: only changed cards flip
   await page.evaluate(() => window.floatview.window('view-mode', 'clock'));
   await setSection(page, 'clock', { ...(await page.evaluate(() => window.floatviewClock.settings.clock)), seconds: true, animate: true, screenShows: 'time' });
-  await page.evaluate(() => new Promise((r) => setTimeout(r, 1000 - (Date.now() % 1000) + 120)));
+  // wait for the next second change — but not :00, when the minutes card flips too
+  await page.evaluate(() => new Promise((r) => { const go = () => { const ms = 1000 - (Date.now() % 1000) + 120; setTimeout(() => (new Date().getSeconds() === 0 ? go() : r()), ms); }; go(); }));
   const flips = await page.evaluate(() => [...document.querySelectorAll('#screen-clock .fc-card')].map((c) => (c.classList.contains('flipping') ? 1 : 0) + (c.hidden ? 'h' : '')));
   ok('C3 only the seconds card flips each second', String(flips[2]) === "1" && String(flips[1]) === "0", JSON.stringify(flips));
   await setSection(page, 'clock', { ...(await page.evaluate(() => window.floatviewClock.settings.clock)), seconds: false, screenShows: 'timer' });

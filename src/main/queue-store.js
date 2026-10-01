@@ -7,7 +7,7 @@ const { pathToFileURL } = require('node:url');
 const { nativeFormat, normalize } = require('./resolver');
 
 const MAX_ITEMS = 500;
-const DEFAULT_QUEUE = { items: [], index: -1, repeat: 'off', shuffle: false, autoNext: true };
+const DEFAULT_QUEUE = { items: [], index: -1, repeat: 'off', shuffle: false, autoNext: true, suggest: true };
 
 const cleanText = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max) : '');
 
@@ -40,6 +40,7 @@ function sanitizeQueue(q, cur = DEFAULT_QUEUE) {
     repeat: ['off', 'all', 'one'].includes(q.repeat) ? q.repeat : (cur.repeat || 'off'),
     shuffle: typeof q.shuffle === 'boolean' ? q.shuffle : !!cur.shuffle,
     autoNext: typeof q.autoNext === 'boolean' ? q.autoNext : cur.autoNext !== false,
+    suggest: typeof q.suggest === 'boolean' ? q.suggest : cur.suggest !== false, // end of list: keep going with YouTube suggestions
   };
 }
 

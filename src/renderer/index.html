@@ -114,11 +114,13 @@
       <button id="q-auto" title="Play the next video when one ends">Autoplay</button>
       <button id="q-repeat" title="Repeat: off → all → one">Repeat: off</button>
       <button id="q-shuffle" title="Shuffle">Shuffle</button>
+      <button id="q-suggest" title="When the list ends on a YouTube video, keep playing YouTube's suggestions">More from YouTube</button>
+      <button id="q-add-suggest" title="Add YouTube's suggestions for the video that is playing">+ Suggestions</button>
       <button id="q-clear" title="Remove everything">Clear</button>
     </div>
     <ol id="q-list"></ol>
     <p class="q-hint">Paste several links (one per line), use <b>+ Queue</b>, or drop files / a folder.
-      YouTube playlist and Vimeo showcase links play as a whole list.</p>
+      YouTube playlists, Mixes and Vimeo showcases play as a whole list; <b>+ Suggestions</b> adds what YouTube suggests.</p>
   </aside>
 
   <!-- Size panel -->
@@ -203,6 +205,7 @@
           <option value="top-right">Top right</option><option value="top-left">Top left</option>
         </select></label>
       <label class="check"><input type="checkbox" id="s-login"> Start with Windows</label>
+      <label class="check"><input type="checkbox" id="s-ads"> Block ads (YouTube and web pages) <span class="hint" id="s-ads-count"></span></label>
       <label>yt-dlp.exe (optional — plays more sites)
         <span class="inline"><input type="text" id="s-ytdlp" placeholder="Not set" spellcheck="false">
           <button id="s-ytdlp-browse">Browse…</button></span></label>

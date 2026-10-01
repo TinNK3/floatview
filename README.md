@@ -5,7 +5,7 @@
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0b0c0f?logo=windows&logoColor=6aa7ff">
   <img alt="Electron 44" src="https://img.shields.io/badge/Electron-44-0b0c0f?logo=electron&logoColor=6aa7ff">
-  <img alt="Version 0.3.1" src="https://img.shields.io/badge/version-0.3.1-6aa7ff">
+  <img alt="Version 0.4.0" src="https://img.shields.io/badge/version-0.4.0-6aa7ff">
   <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-0b0c0f">
 </p>
 
@@ -14,7 +14,8 @@
 Paste a video link → it plays in a small floating window that **stays on top of every other window**.
 Local only: no accounts, no telemetry, nothing leaves the PC except the video stream itself.
 
-**New in 0.3:** playlists — paste several links, YouTube/Vimeo playlists, whole folders; plays the next video by itself.
+**New in 0.4:** YouTube Mixes and your own playlists, “+ Suggestions” / keep playing suggestions, ad blocking.
+**0.3:** playlists — paste several links, YouTube/Vimeo playlists, whole folders; plays the next video by itself.
 **0.2:** a flip clock (on the video or on its own), a Pomodoro timer, and stand-up / move reminders — every time is yours to set.
 
 | Playing on top | Paste a link | Resize big or small |
@@ -23,8 +24,8 @@ Local only: no accounts, no telemetry, nothing leaves the PC except the video st
 
 ## Install
 Two builds (`npm run dist` → `dist\`):
-- **`FloatView-Setup-0.3.1.exe`** — installs per-user (no admin) to `%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
-- **`FloatView-0.3.1-portable.exe`** — one file, no install; double-click to run (first start takes a few seconds while it unpacks).
+- **`FloatView-Setup-0.4.0.exe`** — installs per-user (no admin) to `%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
+- **`FloatView-0.4.0-portable.exe`** — one file, no install; double-click to run (first start takes a few seconds while it unpacks).
 
 ## Resize: big or small
 - **Drag the grip** in the bottom-right corner (shows on hover). The window keeps the video's shape.
@@ -36,7 +37,9 @@ Two builds (`npm run dist` → `dist\`):
 ## Up next: playlists, albums, auto-play
 - **Several links at once:** paste them (one per line) into the link box → they play one after another.
 - **+ Queue** (or `Shift+Enter`) adds a link to the end without stopping what's playing.
-- **YouTube playlists** (`youtube.com/playlist?list=…` or a video link with `&list=…`) and **Vimeo showcases/albums** play as a whole list; ⏮ / ⏭ move inside the list and the title shows the position (e.g. *2/200*).
+- **YouTube playlists** — yours too (public or *unlisted*, e.g. a “FloatView” playlist in your Library) — **YouTube Mixes** (`watch?v=…&list=RD…`) and **Vimeo showcases/albums** play as a whole list; ⏮ / ⏭ move inside the list and the title shows the position (e.g. *2/50*). *Private* playlists can't be played outside YouTube — set them to *Unlisted*.
+- **YouTube suggestions:** **+ Suggestions** adds what YouTube suggests for the video that is playing; with **More from YouTube** on, the list doesn't just stop — at its end, suggestions keep playing (like YouTube's autoplay).
+- **Ads blocked** (Settings → General, on by default): ad servers and YouTube's ad calls are blocked, and an ad that still appears in the player is muted and skipped.
 - **Files and folders:** drop several files, or a whole folder — its videos play in name order (*Ep 1, Ep 2 … Ep 10*).
 - **Other sites' albums/playlists:** with *yt-dlp* set in Settings, FloatView reads the list and queues every video.
 - When a video ends the next one starts. **Repeat** off / all / one, **Shuffle**, **Autoplay** on/off — in the *Up next* panel (list button in the top bar).
@@ -104,6 +107,8 @@ npm test           # unit tests (resolver, store, timer engine, time parser)
 npm run smoke      # end-to-end: launches the app, plays MP4/HLS/YouTube/Vimeo/web links
 npm run smoke:clock  # end-to-end: view modes, flip clock, Pomodoro, move breaks, sounds, settings
 npm run smoke:queue  # end-to-end: Up next, auto-advance, repeat, YouTube playlists, folders
+npm run smoke:keys   # end-to-end: Settings → Keys
+npm run smoke:youtube  # end-to-end on real YouTube: Mix, suggestions, ad blocking (FV_PLAYLIST=<link> to try yours)
 npm run dist       # build the installer into dist\
 ```
 `SMOKE_EXE=dist\win-unpacked\FloatView.exe npm run smoke` runs the same test against the packaged build.
@@ -118,6 +123,7 @@ src/main/timers.js      Pomodoro + move-reminder state machine (pure, unit-teste
 src/main/clock-main.js  timer loop, idle/lock detection, break window, sounds, stats
 src/main/clock-settings.js  clock/timer/sound defaults + validation
 src/main/queue-store.js  Up next: validation, folder expansion, yt-dlp album lists
+src/main/youtube.js     YouTube suggestions / Mix parsing, ad-blocking address list
 src/preload.js          the only bridge between UI and main process
 src/renderer/           UI (plain HTML/CSS/JS), players.js = native + webview players
 src/renderer/inject/    script injected into web pages to find and drive the <video>

@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld('floatview', {
   setQueue: (q) => ipcRenderer.invoke('set-queue', q),
   expandPaths: (paths) => ipcRenderer.invoke('expand-paths', paths),
   expandPlaylist: (url) => ipcRenderer.invoke('expand-playlist', url),
+  youtubeSuggestions: (urlOrId) => ipcRenderer.invoke('youtube-suggestions', urlOrId),
   // hotkeys (Settings → Keys)
   getHotkeys: () => ipcRenderer.invoke('get-hotkeys'),
   setHotkey: (action, accel) => ipcRenderer.invoke('set-hotkey', action, accel),

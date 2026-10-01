@@ -18,6 +18,7 @@ const DEFAULTS = {
     aspect: 'auto', // 'auto' | '16:9' | '9:16' | '4:3' | 'free'
     launchAtLogin: false,
     ytDlpPath: null,
+    blockAds: true,
     hotkeys: {
       playPause: 'Ctrl+Alt+Space',
       focusLink: 'Ctrl+Alt+V',

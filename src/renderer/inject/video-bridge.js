@@ -96,8 +96,8 @@
       case 'toggle': v.paused ? v.play().catch(() => {}) : v.pause(); break;
       case 'seek': v.currentTime = Math.max(0, Math.min((v.duration || Infinity) - 0.5, v.currentTime + arg)); break;
       case 'seekTo': v.currentTime = Math.max(0, arg); break;
-      case 'volume': v.volume = Math.max(0, Math.min(1, arg)); if (arg > 0) v.muted = false; break;
-      case 'muted': v.muted = !!arg; break;
+      case 'volume': adMuted = false; v.volume = Math.max(0, Math.min(1, arg)); if (arg > 0) v.muted = false; break;
+      case 'muted': adMuted = false; v.muted = !!arg; break; // the user's choice wins over the ad mute
       case 'rate': v.playbackRate = arg; break;
     }
     return true;
@@ -117,8 +117,41 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
+  // The YouTube video that is on screen right now (also inside a playlist / Mix).
+  function ytVideoId() {
+    try {
+      const id = document.getElementById('movie_player')?.getVideoData?.().video_id;
+      return /^[\w-]{11}$/.test(id || '') ? id : null;
+    } catch { return null; }
+  }
+
+  // Ads that got through the request blocker: mute, jump to the end, press Skip.
+  // Only when FloatView's "Block ads" is on (window.__fvBlockAds, set by the host).
+  let adMuted = false;
+  let mainDuration = 0; // length of the real video, remembered while no ad is showing
+  function skipYouTubeAd() {
+    const p = document.getElementById('movie_player');
+    const showing = !!p && (p.classList.contains('ad-showing') || p.classList.contains('ad-interrupting'));
+    const v = document.querySelector('#movie_player video, video');
+    if (!showing && v && Number.isFinite(v.duration) && v.duration > 0) mainDuration = v.duration;
+    if (showing && window.__fvBlockAds) {
+      if (v) {
+        if (!v.muted) { v.muted = true; adMuted = true; }
+        // Fast-forward only when the ad is clearly its own short clip. When YouTube splices the ad
+        // into the video's own stream, the <video> length is the real video's: seeking would skip it.
+        const ownClip = Number.isFinite(v.duration) && v.duration > 0 && v.duration <= 180
+          && (!mainDuration || Math.abs(v.duration - mainDuration) > 1);
+        if (ownClip && v.currentTime < v.duration - 0.2) v.currentTime = v.duration - 0.1;
+      }
+      document.querySelectorAll('.ytp-skip-ad-button, .ytp-ad-skip-button, .ytp-ad-skip-button-modern, [id^="skip-button"] button')
+        .forEach((b) => { try { b.click(); } catch { /* ignore */ } });
+    } else if (adMuted && v) { v.muted = false; adMuted = false; }
+    return showing;
+  }
+
   function status() {
     hideYouTubeChrome();
+    const ad = /(^|\.)youtube(-nocookie)?\.com$/.test(location.hostname) ? skipYouTubeAd() : false;
     const yterr = ytError();
     if (yterr) return { found: true, error: yterr, title: document.title, paused: true, ended: false, currentTime: 0, duration: 0 };
     if (window.__fvVideoOnly) videoOnly();
@@ -143,6 +176,9 @@
       h: v.videoHeight,
       title: document.title,
       yt: (() => { const y = ytPlaylist(); return y ? { index: y.index, count: y.count, title: y.p.getVideoData?.().title || '' } : null; })(),
+      ytId: ytVideoId(),
+      ad, // an ad is on screen: not the end of the real video
+      adSkipped: ad && !!window.__fvBlockAds,
     };
   }
 

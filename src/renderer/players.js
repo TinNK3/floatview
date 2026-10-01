@@ -86,12 +86,13 @@ class NativePlayer {
 }
 
 class WebviewPlayer {
-  constructor(stage, source, { onError, onTitle, injectScript }) {
+  constructor(stage, source, { onError, onTitle, injectScript, blockAds = true }) {
     this.stage = stage;
     this.source = source;
     this.onError = onError;
     this.onTitle = onTitle;
     this.injectScript = injectScript;
+    this.blockAds = blockAds;
     this.wv = null;
     this.ready = false;
   }
@@ -102,7 +103,7 @@ class WebviewPlayer {
     wv.setAttribute('webpreferences', 'backgroundThrottling=no');
     wv.setAttribute('src', this.source.url);
     const inject = () => {
-      const code = `window.__fvVideoOnly = ${this.source.kind === 'web'};\n${this.injectScript}`;
+      const code = `window.__fvVideoOnly = ${this.source.kind === 'web'};\nwindow.__fvBlockAds = ${!!this.blockAds};\n${this.injectScript}`;
       wv.executeJavaScript(code).then(() => { this.ready = true; }).catch(() => {});
     };
     wv.addEventListener('dom-ready', inject);
