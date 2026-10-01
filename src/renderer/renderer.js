@@ -31,7 +31,10 @@ let seeking = false;
   renderRecent();
   fillSettings();
   ui.linkInput.focus();
-  if (app.hotkeyErrors?.length) toast(`Hotkey already used by another app: ${app.hotkeyErrors.join(', ')}`, 5000);
+  if (app.hotkeyErrors?.length) {
+    const n = app.hotkeyErrors.length;
+    toast(`${n} keyboard shortcut${n > 1 ? 's are' : ' is'} taken by another app — see Settings → Keys`, 5000);
+  }
 })();
 
 // ------------------------------------------------------------------ open / close
@@ -435,7 +438,6 @@ function fillSettings() {
   $('s-corner').value = s.defaultCorner;
   $('s-login').checked = !!s.launchAtLogin;
   $('s-ytdlp').value = s.ytDlpPath || '';
-  $('s-hotkeys').textContent = 'Hotkeys: ' + Object.entries(s.hotkeys).map(([k, v]) => `${v} = ${k}`).join(' · ');
 }
 
 async function setSetting(key, value) { app.settings = await api.setSetting(key, value); fillSettings(); }
@@ -459,7 +461,7 @@ $('s-ytdlp-browse').addEventListener('click', async () => {
 });
 $('s-clear-history').addEventListener('click', async () => { app.history = await api.clearHistory(); renderRecent(); toast('History cleared'); });
 $('s-clear-site').addEventListener('click', async () => { await api.clearSiteData(); toast('Site cookies cleared'); });
-$('s-open-file').addEventListener('click', () => { api.openDataFile(); toast('Edit "hotkeys", save, then restart FloatView', 4000); });
+$('s-keys').addEventListener('click', () => window.floatviewClock?.showTab('keys'));
 $('s-quit').addEventListener('click', () => api.window('quit'));
 $('settings-close').addEventListener('click', closeSettings);
 

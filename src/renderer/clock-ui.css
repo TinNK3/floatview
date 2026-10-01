@@ -107,3 +107,35 @@ body.active .pomo-buttons, .pomo-buttons:focus-within, body.timer-running-none .
 .settings-body .reset { color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: 0; padding: 0;
   height: auto; text-align: left; text-decoration: underline; width: fit-content; }
 .settings-body .reset:hover { color: var(--text); background: none; }
+
+/* ---- Settings → Keys ---- */
+/* no overflow:hidden here: in the scrolling settings grid it lets the list shrink and cut rows off */
+.key-list { display: grid; border: 1px solid var(--line); border-radius: 10px; min-height: max-content; }
+.key-row:first-child { border-radius: 10px 10px 0 0; }
+.key-row:last-child { border-radius: 0 0 10px 10px; }
+.key-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 7px 10px; font-size: 12.5px; }
+.key-row + .key-row { border-top: 1px solid var(--line); }
+.key-row.recording { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.key-row.taken .caps kbd { opacity: .55; text-decoration: line-through; }
+.key-label { color: var(--text); min-width: 0; }
+.key-warn { color: #ffb454; font-size: 11px; white-space: nowrap; }
+.key-msg { display: block; font-size: 11px; margin-top: 2px; }
+.key-msg.bad { color: var(--danger); }
+.key-msg.good { color: #7ddc8a; }
+.caps { display: inline-flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+.caps kbd { min-width: 22px; height: 22px; padding: 0 6px; display: inline-grid; place-items: center; border-radius: 5px;
+  font: 600 11px/1 "Segoe UI", system-ui, sans-serif; color: var(--text); background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16); border-bottom-width: 2px; }
+.caps.none { color: var(--muted); font-size: 11.5px; font-style: italic; }
+.caps.rec { color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.key-actions { display: inline-flex; gap: 4px; }
+.key-actions button { height: 26px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line); background: rgba(255,255,255,.06);
+  color: var(--text); cursor: pointer; font-size: 11.5px; }
+.key-actions button:hover { background: rgba(255,255,255,.13); }
+.key-actions button.quiet { width: 26px; padding: 0; color: var(--muted); }
+.key-list.local .key-row { grid-template-columns: 1fr auto 0; }
+@media (max-width: 420px) { .key-row { grid-template-columns: 1fr auto; } .key-row .key-actions { grid-column: 1 / -1; justify-content: flex-end; } }
+/* Keys tab: plain block flow (in the shared grid layout the lists overflowed their rows and overlapped) */
+.settings-body[data-panel="keys"] { display: block; }
+.settings-body[data-panel="keys"] > * + * { margin-top: 10px; }
+.settings-body[data-panel="keys"] > h3 { margin-top: 18px; }

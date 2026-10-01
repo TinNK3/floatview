@@ -176,12 +176,14 @@
       <button role="tab" data-tab="move" aria-selected="false">Move</button>
       <button role="tab" data-tab="sounds" aria-selected="false">Sounds</button>
       <button role="tab" data-tab="stats" aria-selected="false">Stats</button>
+      <button role="tab" data-tab="keys" aria-selected="false">Keys</button>
     </nav>
     <div class="settings-body tab-panel" data-panel="clock" hidden></div>
     <div class="settings-body tab-panel" data-panel="pomodoro" hidden></div>
     <div class="settings-body tab-panel" data-panel="move" hidden></div>
     <div class="settings-body tab-panel" data-panel="sounds" hidden></div>
     <div class="settings-body tab-panel" data-panel="stats" hidden></div>
+    <div class="settings-body tab-panel" data-panel="keys" hidden></div>
     <div class="settings-body tab-panel" data-panel="general">
       <label>Default opacity <output id="o-opacity"></output>
         <input type="range" id="s-opacity" min="20" max="100"></label>
@@ -207,9 +209,8 @@
       <div class="btn-row">
         <button id="s-clear-history">Clear history</button>
         <button id="s-clear-site">Clear site cookies</button>
-        <button id="s-open-file" title="Hotkeys are edited here">Edit hotkeys…</button>
+        <button id="s-keys" title="See and change keyboard shortcuts">Keyboard shortcuts…</button>
       </div>
-      <p class="hint" id="s-hotkeys"></p>
       <div class="btn-row"><button id="s-quit" class="danger">Quit FloatView</button></div>
     </div>
   </aside>
@@ -224,5 +225,6 @@
   <script src="clock/flip-clock.js"></script>
   <script src="queue.js"></script>
   <script src="clock-ui.js"></script>
+  <script src="keys-ui.js"></script>
 </body>
 </html>

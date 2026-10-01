@@ -520,13 +520,67 @@ const HOTKEY_ACTIONS = {
 function registerHotkeys() {
   globalShortcut.unregisterAll();
   const failed = [];
+  const failedActions = [];
   for (const [action, accel] of Object.entries(store.get('settings').hotkeys)) {
     const fn = HOTKEY_ACTIONS[action];
     if (!fn || !accel) continue;
-    try { if (!globalShortcut.register(accel, fn)) failed.push(accel); } catch { failed.push(accel); }
+    let ok = false;
+    try { ok = globalShortcut.register(accel, fn); } catch { ok = false; }
+    if (!ok) { failed.push(accel); failedActions.push(action); }
   }
-  state.hotkeyErrors = failed; // taken by another app, or invalid
+  state.hotkeyErrors = failed;              // taken by another app, or invalid
+  state.hotkeyFailedActions = failedActions;
 }
+
+// ---- editing hotkeys from Settings → Keys
+// An accelerator FloatView accepts: at least one of Ctrl/Alt/Super (so plain typing keys are never
+// stolen system-wide), then one key.
+const HOTKEY_KEY = /^([A-Z0-9]|F([1-9]|1[0-9]|2[0-4])|Up|Down|Left|Right|PageUp|PageDown|Home|End|Insert|Delete|Space|Tab|Backspace|Enter|=|-|\[|\]|\\|;|'|,|\.|\/|`|num[0-9]|numadd|numsub|nummult|numdiv|numdec)$/;
+function validAccelerator(accel) {
+  if (typeof accel !== 'string' || accel.length > 40) return false;
+  const parts = accel.split('+');
+  // "Ctrl+Alt+=" splits fine; "Ctrl+Alt+Plus" style isn't produced by the recorder
+  const key = parts.pop();
+  const mods = new Set(parts);
+  if (mods.size !== parts.length || ![...mods].every((m) => ['Ctrl', 'Alt', 'Shift', 'Super'].includes(m))) return false;
+  if (!mods.has('Ctrl') && !mods.has('Alt') && !mods.has('Super')) return false;
+  return HOTKEY_KEY.test(key);
+}
+
+function hotkeyReport() {
+  return { hotkeys: store.get('settings').hotkeys, failed: state.hotkeyFailedActions || [] };
+}
+
+ipcMain.handle('get-hotkeys', () => hotkeyReport());
+
+// accel '' = no shortcut for this action
+ipcMain.handle('set-hotkey', (_e, action, accel) => {
+  if (!Object.hasOwn(HOTKEY_ACTIONS, action)) return { ...hotkeyReport(), error: 'Unknown action' };
+  if (accel !== '' && !validAccelerator(accel)) {
+    return { ...hotkeyReport(), error: 'Use Ctrl, Alt or Win together with another key (for example Ctrl+Alt+K).' };
+  }
+  const hotkeys = { ...store.get('settings').hotkeys };
+  const clash = accel && Object.entries(hotkeys).find(([a, k]) => a !== action && k && k.toLowerCase() === accel.toLowerCase());
+  if (clash) return { ...hotkeyReport(), error: `${accel} is already used here`, clash: clash[0] };
+  hotkeys[action] = accel;
+  store.set('settings', { ...store.get('settings'), hotkeys });
+  registerHotkeys();
+  const r = hotkeyReport();
+  return r.failed.includes(action) ? { ...r, error: `${accel} is taken by another app. Try a different one.` } : r;
+});
+
+ipcMain.handle('reset-hotkeys', () => {
+  const { DEFAULTS } = require('./store');
+  store.set('settings', { ...store.get('settings'), hotkeys: { ...DEFAULTS.settings.hotkeys } });
+  registerHotkeys();
+  return hotkeyReport();
+});
+
+// While the user records a new shortcut, the old global ones must not fire.
+ipcMain.handle('pause-hotkeys', (_e, on) => {
+  if (on) globalShortcut.unregisterAll(); else registerHotkeys();
+  return true;
+});
 
 // ---------------------------------------------------------------- IPC
 

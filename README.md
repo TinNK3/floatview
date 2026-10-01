@@ -5,7 +5,7 @@
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0b0c0f?logo=windows&logoColor=6aa7ff">
   <img alt="Electron 44" src="https://img.shields.io/badge/Electron-44-0b0c0f?logo=electron&logoColor=6aa7ff">
-  <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-6aa7ff">
+  <img alt="Version 0.3.1" src="https://img.shields.io/badge/version-0.3.1-6aa7ff">
   <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-0b0c0f">
 </p>
 
@@ -23,8 +23,8 @@ Local only: no accounts, no telemetry, nothing leaves the PC except the video st
 
 ## Install
 Two builds (`npm run dist` → `dist\`):
-- **`FloatView-Setup-0.3.0.exe`** — installs per-user (no admin) to `%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
-- **`FloatView-0.3.0-portable.exe`** — one file, no install; double-click to run (first start takes a few seconds while it unpacks).
+- **`FloatView-Setup-0.3.1.exe`** — installs per-user (no admin) to `%LOCALAPPDATA%\Programs\FloatView` and adds a Start-menu shortcut.
+- **`FloatView-0.3.1-portable.exe`** — one file, no install; double-click to run (first start takes a few seconds while it unpacks).
 
 ## Resize: big or small
 - **Drag the grip** in the bottom-right corner (shows on hover). The window keeps the video's shape.
