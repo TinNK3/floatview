@@ -83,7 +83,7 @@ Switch view with the ⏱ button in the top bar, the tray menu, or `Ctrl+Alt+C`:
 Inside the window: `Space`/`K` play (in Clock mode: start/pause the Pomodoro), `←/→` seek 5 s, `↑/↓` volume, `M` mute, `N` new link, `Shift+N` / `Shift+P` next / previous video, `Esc` close panels.
 In click-through mode, hover the lock in the top-right corner and click it to turn click-through off.
 
-Hotkeys can be changed in `%APPDATA%\FloatView\floatview.json` (Settings → *Edit hotkeys…*), then restart.
+Change any of them in **Settings → Keys**: click *Change* and press the new keys (Ctrl, Alt or Win plus a key). A clash, or a shortcut already taken by another app, is flagged on its row; *Reset all to defaults* puts them back.
 
 ## What plays
 | Link | How |
