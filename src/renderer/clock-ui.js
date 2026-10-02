@@ -123,18 +123,40 @@
     return `Stand up in ${formatDuration(m.dueInSec)}`;
   }
 
+  // 'auto' = the Pomodoro while one is on, otherwise the time
+  function overlayShowsPomodoro(p = snap.pomo) {
+    const big = settings.clock.overlay.big || 'auto';
+    return big === 'pomodoro' || (big === 'auto' && p.phase !== 'idle');
+  }
+
+  // Click the clock on the video to switch Time <-> Pomodoro.
+  pill.addEventListener('click', () => {
+    const toPomodoro = !overlayShowsPomodoro();
+    save('clock', { overlay: { ...settings.clock.overlay, big: toPomodoro ? 'pomodoro' : 'time' } });
+    toast(toPomodoro ? 'Showing the Pomodoro on the video' : 'Showing the time on the video', 1400);
+  });
+
   function render(force) {
     const now = new Date();
     const p = { ...snap.pomo, leftSec: liveLeft(snap.pomo.endsAt, snap.pomo.leftSec) };
     const tv = timeValues(now);
 
-    // Overlay: the time, plus a small line (Pomodoro / sitting / date)
+    // Overlay: big numbers = the time or the Pomodoro (setting / click to switch), plus a small line
     if (settings.viewMode === 'video-clock' || force) {
-      const show = settings.clock.overlay.show;
-      let meta = esc(dateLine(now));
-      if (show === 'pomodoro' && p.phase !== 'idle') meta = `<span class="fc-accent">${PHASE[p.phase]}</span><span>${formatDuration(p.leftSec)}${p.running ? '' : ' ❚❚'}</span>`;
-      if (show === 'sitting' && snap.move.enabled) meta = `<span>${esc(moveLine())}</span>`;
-      overlayClock.show({ ...tv, meta });
+      if (overlayShowsPomodoro(p)) {
+        const clockText = `${tv.a}:${tv.b}${tv.ampm ? ' ' + tv.ampm : ''}`;
+        const label = p.phase === 'idle' ? 'Pomodoro · ready' : PHASE[p.phase] + (p.running ? '' : ' · paused');
+        const value = p.phase === 'idle' ? settings.pomodoro.focusSec : p.leftSec;
+        overlayClock.show({ ...countdownValues(value), ampm: '', meta: `<span class="fc-accent">${label}</span><span>${clockText}</span>` });
+        pill.title = 'Showing the Pomodoro — click to show the time (Ctrl+Alt+S starts / pauses)';
+      } else {
+        const show = settings.clock.overlay.show;
+        let meta = esc(dateLine(now));
+        if (show === 'pomodoro' && p.phase !== 'idle') meta = `<span class="fc-accent">${PHASE[p.phase]}</span><span>${formatDuration(p.leftSec)}${p.running ? '' : ' ❚❚'}</span>`;
+        if (show === 'sitting' && snap.move.enabled) meta = `<span>${esc(moveLine())}</span>`;
+        overlayClock.show({ ...tv, meta });
+        pill.title = 'Showing the time — click to show the Pomodoro';
+      }
     }
 
     // Clock screen: big countdown while a Pomodoro is on (setting), else the time
@@ -393,7 +415,10 @@
       h('label', { class: 'field' }, `Opacity ${Math.round(c.overlay.opacity * 100)}%`,
         h('input', { type: 'range', min: 20, max: 100, value: Math.round(c.overlay.opacity * 100),
           onchange: (e) => save('clock', { overlay: { ...c.overlay, opacity: e.target.value / 100 } }).then(() => renderTab('clock')) })),
-      select('Line under the clock', c.overlay.show, [['pomodoro', 'Pomodoro countdown (when running)'], ['sitting', 'Sitting time'], ['none', 'Date / nothing']],
+      select('Big numbers on the video', c.overlay.big || 'auto', [['auto', 'Pomodoro while it runs, otherwise the time'], ['time', 'Always the time'], ['pomodoro', 'Always the Pomodoro']],
+        (v) => save('clock', { overlay: { ...c.overlay, big: v } })),
+      h('p', { class: 'hint' }, 'Tip: click the clock on the video to switch between the time and the Pomodoro.'),
+      select('Line under the clock (when it shows the time)', c.overlay.show, [['pomodoro', 'Pomodoro countdown (when running)'], ['sitting', 'Sitting time'], ['none', 'Date / nothing']],
         (v) => save('clock', { overlay: { ...c.overlay, show: v } })),
       toggle('Hide clock while the mouse is over the window', c.overlay.hideOnHover, (v) => save('clock', { overlay: { ...c.overlay, hideOnHover: v } })),
       h('h3', {}, 'Clock only mode'),

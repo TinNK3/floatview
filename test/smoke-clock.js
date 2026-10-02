@@ -127,6 +127,30 @@ async function waitFor(fn, ms = 20000, step = 250) {
   await page.evaluate(() => window.floatview.timer('pomo-start'));
   await sleep(1500);
   ok('C4 video resumes when focus starts again', !(await videoPaused(page)));
+
+  // ---- the clock on the video: Pomodoro while it runs; a click switches to the time and back
+  await setSection(page, 'pomodoro', { ...(await page.evaluate(() => window.floatviewClock.settings.pomodoro)), focusSec: 600 });
+  await page.evaluate(() => window.floatview.timer('pomo-reset'));
+  await page.evaluate(() => window.floatview.timer('pomo-start'));
+  await page.evaluate(() => window.floatview.window('view-mode', 'video-clock'));
+  await setSection(page, 'clock', { ...(await page.evaluate(() => window.floatviewClock.settings.clock)), seconds: false,
+    overlay: { ...(await page.evaluate(() => window.floatviewClock.settings.clock.overlay)), big: 'auto', hideOnHover: false } });
+  await sleep(1500);
+  const cards = () => page.evaluate(() => [...document.querySelectorAll('#overlay-clock .fc-card')].slice(0, 2).map((c) => c._value).join(':'));
+  const hhmm = () => page.evaluate(() => { const d = new Date(); return [d.getHours(), d.getMinutes()].map((n) => String(n).padStart(2, '0')).join(':'); });
+  const showsPomo = (v) => /^(09|10):\d\d$/.test(v); // a 10-min focus counting down
+  const v1 = await cards();
+  await page.screenshot({ path: path.join(OUT, 'c-overlay-pomodoro.png') });
+  await page.click('#clock-overlay .clock-pill');
+  await sleep(900);
+  const v2 = await cards();
+  const now2 = await hhmm();
+  await page.click('#clock-overlay .clock-pill');
+  await sleep(900);
+  const v3 = await cards();
+  const saved = await page.evaluate(() => window.floatviewClock.settings.clock.overlay.big);
+  ok('clock on the video shows the Pomodoro while it runs', showsPomo(v1), v1);
+  ok('click switches it to the time, click again back to the Pomodoro', v2 === now2 && showsPomo(v3) && saved === 'pomodoro', `${v1} → ${v2} → ${v3} (${saved})`);
   await page.evaluate(() => window.floatview.timer('pomo-reset'));
 
   // ---- C6: move reminder -> break screen -> video paused -> resumes

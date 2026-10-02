@@ -10,7 +10,8 @@ body.mode-video-clock:not(.is-empty) #clock-overlay { display: flex; }
 #clock-overlay[data-anchor$=left] { justify-content: flex-start; }
 #clock-overlay[data-anchor=top], #clock-overlay[data-anchor=center], #clock-overlay[data-anchor=bottom] { justify-content: center; }
 #clock-overlay[data-anchor$=right] { justify-content: flex-end; }
-#clock-overlay .clock-pill { opacity: var(--overlay-opacity, .85); transition: opacity var(--fade); border-radius: 14px; padding: 0; }
+#clock-overlay .clock-pill { opacity: var(--overlay-opacity, .85); transition: opacity var(--fade); border-radius: 14px; padding: 0;
+  pointer-events: auto; cursor: pointer; } /* click = switch time / Pomodoro; the rest of the video stays clickable */
 #clock-overlay .clock-pill.glass { padding: 8px 14px; background: var(--pill-bg); backdrop-filter: blur(var(--pill-blur, 0px)); }
 body.active #clock-overlay.hide-on-hover .clock-pill { opacity: 0; }
 
@@ -139,3 +140,5 @@ body.active .pomo-buttons, .pomo-buttons:focus-within, body.timer-running-none .
 .settings-body[data-panel="keys"] { display: block; }
 .settings-body[data-panel="keys"] > * + * { margin-top: 10px; }
 .settings-body[data-panel="keys"] > h3 { margin-top: 18px; }
+/* hidden on hover = also not clickable (an invisible clock mustn't catch clicks meant for the video) */
+body.active #clock-overlay.hide-on-hover .clock-pill { pointer-events: none; }

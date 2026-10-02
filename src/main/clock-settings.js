@@ -25,7 +25,7 @@ const DEFAULTS = {
   clock: {
     theme: 'midnight', hour12: false, seconds: false, date: 'off', animate: true, font: null,
     colors: { digit: null, card: null, bg: null, accent: null },
-    overlay: { size: 'M', anchor: 'top-right', opacity: 0.85, hideOnHover: false, show: 'pomodoro' },
+    overlay: { size: 'M', anchor: 'top-right', opacity: 0.85, hideOnHover: false, show: 'pomodoro', big: 'auto' }, // big: 'auto' | 'time' | 'pomodoro'
     screenShows: 'timer',         // Clock mode: big countdown while a Pomodoro runs ('timer') or always the time ('time')
     pauseVideoInClock: false,
   },
@@ -77,6 +77,7 @@ function sanitizeClock(v, cur, ctx) {
       opacity: num(o.opacity, 0.2, 1, cur.overlay.opacity),
       hideOnHover: bool(o.hideOnHover, cur.overlay.hideOnHover),
       show: oneOf(o.show, ['none', 'pomodoro', 'sitting'], cur.overlay.show),
+      big: oneOf(o.big, ['auto', 'time', 'pomodoro'], cur.overlay.big || 'auto'),
     },
     screenShows: oneOf(v.screenShows, ['timer', 'time'], cur.screenShows),
     pauseVideoInClock: bool(v.pauseVideoInClock, cur.pauseVideoInClock),
